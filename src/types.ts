@@ -11,6 +11,9 @@ export type SoundProfile = 'mechanical' | 'thock' | 'creamsicle' | 'typewriter' 
 
 export type CaretStyle = 'line' | 'block' | 'underline' | 'laser';
 
+/** 'auto' fits the interface to the browser window, numbers are zoom percentages. */
+export type ZoomLevel = 'auto' | 100 | 110 | 125 | 150 | 175 | 200;
+
 export type ThemeId =
   | 'maher-obsidian'
   | 'nordic-frost'
@@ -36,6 +39,7 @@ export interface TestSettings {
   theme: ThemeId;
   caretStyle: CaretStyle;
   fontSize: 'sm' | 'md' | 'lg' | 'xl';
+  zoom: ZoomLevel;
   showVirtualKeyboard: boolean;
   showFingerGuide: boolean;
   showLiveWpm: boolean;

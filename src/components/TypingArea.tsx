@@ -9,6 +9,7 @@ import {
   TestSettings
 } from '../types';
 import { ThemeConfig } from '../utils/themes';
+import { BASE_FONT_SIZE } from '../utils/zoom';
 import { playErrorSound, playFinishFanfare, playKeySound } from '../utils/audio';
 
 interface TypingAreaProps {
@@ -84,10 +85,15 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
   // Smooth line scrolling only when wordIndex changes (line wrap)
   useEffect(() => {
     if (activeWordRef.current && containerRef.current) {
+      // Line offsets below are authored in px at 100%, keep them proportional
+      // to the interface zoom so the visible lines stay aligned.
+      const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize) || BASE_FONT_SIZE;
+      const uiScale = rootFontSize / BASE_FONT_SIZE;
+
       const wordTop = activeWordRef.current.offsetTop;
-      if (wordTop > 40) {
+      if (wordTop > 40 * uiScale) {
         containerRef.current.scrollTo({
-          top: wordTop - 36,
+          top: wordTop - 36 * uiScale,
           behavior: 'smooth'
         });
       } else {
@@ -388,8 +394,8 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
                       settings.caretStyle === 'block'
                         ? 'inset-0 opacity-40 rounded-xs ' + theme.accentBg
                         : settings.caretStyle === 'underline'
-                        ? 'left-0 right-0 bottom-0.5 h-[2.5px] rounded-full ' + theme.accentBg
-                        : 'left-0 top-[10%] bottom-[10%] w-[2.5px] -translate-x-[1px] rounded-full ' + theme.caret
+                        ? 'left-0 right-0 bottom-0.5 h-[0.15625rem] rounded-full ' + theme.accentBg
+                        : 'left-0 top-[10%] bottom-[10%] w-[0.15625rem] -translate-x-[0.0625rem] rounded-full ' + theme.caret
                     }
                     ${!isActive ? 'animate-caret-blink' : ''}
                   `}
@@ -419,8 +425,8 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
                   settings.caretStyle === 'block'
                     ? 'left-0 top-[10%] bottom-[10%] w-2.5 opacity-40 rounded-xs ' + theme.accentBg
                     : settings.caretStyle === 'underline'
-                    ? 'left-0 w-2.5 bottom-0.5 h-[2.5px] rounded-full ' + theme.accentBg
-                    : 'left-0 top-[10%] bottom-[10%] w-[2.5px] rounded-full ' + theme.caret
+                    ? 'left-0 w-2.5 bottom-0.5 h-[0.15625rem] rounded-full ' + theme.accentBg
+                    : 'left-0 top-[10%] bottom-[10%] w-[0.15625rem] rounded-full ' + theme.caret
                 }
                 ${!isActive ? 'animate-caret-blink' : ''}
               `}
@@ -458,7 +464,7 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
           {settings.showLiveWpm && isActive && (
             <div className="flex items-center gap-1 text-neutral-300">
               <span className="font-bold text-sm text-cyan-400">{liveWpm}</span>
-              <span className="text-[11px] text-neutral-400">wpm</span>
+              <span className="text-[0.6875rem] text-neutral-400">wpm</span>
             </div>
           )}
 
@@ -468,13 +474,13 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
               <span className={`font-bold text-sm ${liveAccuracy >= 95 ? 'text-emerald-400' : 'text-amber-400'}`}>
                 {liveAccuracy}%
               </span>
-              <span className="text-[11px] text-neutral-400">acc</span>
+              <span className="text-[0.6875rem] text-neutral-400">acc</span>
             </div>
           )}
         </div>
 
         {/* Live Shortcut Hint */}
-        <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-neutral-400">
+        <div className="hidden sm:flex items-center gap-1.5 text-[0.6875rem] text-neutral-400">
           <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-neutral-300 border border-white/10">tab</kbd>
           <span>+</span>
           <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-neutral-300 border border-white/10">enter</kbd>
@@ -538,7 +544,7 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
         {/* Text Container with smooth 3-line viewport */}
         <div
           ref={containerRef}
-          className="relative max-h-[115px] sm:max-h-[130px] overflow-hidden leading-relaxed tracking-wider select-none font-mono-code"
+          className="relative max-h-[7.1875rem] sm:max-h-[8.125rem] overflow-hidden leading-relaxed tracking-wider select-none font-mono-code"
         >
           {/* Words */}
           <div className="flex flex-wrap">

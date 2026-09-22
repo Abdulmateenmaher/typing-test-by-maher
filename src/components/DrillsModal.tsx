@@ -131,11 +131,11 @@ export const DrillsModal: React.FC<DrillsModalProps> = ({
                     <div className="font-semibold text-neutral-200 text-sm group-hover:text-cyan-300 transition-colors">
                       {item.title}
                     </div>
-                    <div className="text-neutral-400 text-[11px] mt-1.5 line-clamp-2">
+                    <div className="text-neutral-400 text-[0.6875rem] mt-1.5 line-clamp-2">
                       {item.words.slice(0, 10).join(' ')}...
                     </div>
                   </div>
-                  <div className="mt-3 flex items-center justify-between text-[11px] text-cyan-400 font-semibold">
+                  <div className="mt-3 flex items-center justify-between text-[0.6875rem] text-cyan-400 font-semibold">
                     <span>{item.words.length} Words</span>
                     <span className="group-hover:translate-x-1 transition-transform">Start Drill →</span>
                   </div>
@@ -192,7 +192,7 @@ export const DrillsModal: React.FC<DrillsModalProps> = ({
                 className="w-full p-4 rounded-xl bg-white/5 border border-white/10 text-white font-mono-code text-xs focus:outline-none focus:ring-1 focus:ring-cyan-500 resize-none"
               />
 
-              <div className="flex items-center justify-between text-neutral-400 text-[11px]">
+              <div className="flex items-center justify-between text-neutral-400 text-[0.6875rem]">
                 <span>{customText.trim() ? customText.trim().split(/\s+/).length : 0} words parsed</span>
                 <button
                   onClick={handleApplyCustomText}

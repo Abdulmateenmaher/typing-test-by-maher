@@ -22,6 +22,7 @@ import {
   syncUserLeaderboard,
   fetchUserCloudHistory
 } from './firebase';
+import { useViewportZoom } from './hooks/useViewportZoom';
 import { Header } from './components/Header';
 import { ModeSelector } from './components/ModeSelector';
 import { TypingArea } from './components/TypingArea';
@@ -49,6 +50,7 @@ const DEFAULT_SETTINGS: TestSettings = {
   theme: 'maher-obsidian',
   caretStyle: 'line',
   fontSize: 'md',
+  zoom: 'auto',
   showVirtualKeyboard: true,
   showFingerGuide: true,
   showLiveWpm: true,
@@ -68,6 +70,10 @@ export default function App() {
     }
     return DEFAULT_SETTINGS;
   });
+
+  // Keep the whole interface scaled to the browser window (rem based zoom)
+  const zoomScale = useViewportZoom(settings.zoom || 'auto');
+
 
   // History with LocalStorage persistence
   const [history, setHistory] = useState<TestResult[]>(() => {
@@ -407,7 +413,7 @@ export default function App() {
           <span className="hidden sm:inline">Firebase Cloud Database & Live Global Leaderboard</span>
         </div>
 
-        <div className="flex items-center gap-4 text-[11px]">
+        <div className="flex items-center gap-4 text-[0.6875rem]">
           <span>
             <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-neutral-300">tab</kbd> + <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-neutral-300">enter</kbd> restart
           </span>
@@ -433,6 +439,7 @@ export default function App() {
         isOpen={isSettingsOpen}
         settings={settings}
         theme={currentTheme}
+        activeZoomPercent={Math.round(zoomScale * 100)}
         onClose={() => setIsSettingsOpen(false)}
         onUpdateSettings={(partial) => setSettings((prev) => ({ ...prev, ...partial }))}
       />

@@ -114,7 +114,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         {/* Action Pills */}
         <div className="flex items-center gap-2 flex-wrap">
           {isCloudSynced && (
-            <div className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-300">
+            <div className="flex items-center gap-1 px-2.5 py-1 text-[0.6875rem] font-medium rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-300">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span>Cloud Synced</span>
             </div>
@@ -280,7 +280,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
 
         {activeTab === 'chart' ? (
           <div className="w-full overflow-x-auto">
-            <div className="min-w-[600px] h-[220px] relative">
+            <div className="min-w-[37.5rem] h-[13.75rem] relative">
               <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full h-full overflow-visible">
                 {/* Horizontal reference grid lines */}
                 {[0, 0.25, 0.5, 0.75, 1].map((pct, idx) => {
@@ -300,7 +300,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                         x={paddingX - 8}
                         y={y + 3}
                         textAnchor="end"
-                        className="fill-neutral-500 text-[10px] font-mono-code"
+                        className="fill-neutral-500 text-[0.625rem] font-mono-code"
                       >
                         {val}
                       </text>
@@ -349,7 +349,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                             x={x}
                             y={getY(pt.rawWpm) - 14}
                             textAnchor="middle"
-                            className="fill-rose-400 text-[9px] font-bold"
+                            className="fill-rose-400 text-[0.5625rem] font-bold"
                           >
                             ✕{pt.errors}
                           </text>
@@ -362,7 +362,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                           x={x}
                           y={chartHeight - 6}
                           textAnchor="middle"
-                          className="fill-neutral-500 text-[10px] font-mono-code"
+                          className="fill-neutral-500 text-[0.625rem] font-mono-code"
                         >
                           {pt.second}s
                         </text>
@@ -397,8 +397,8 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                     }`}
                   >
                     <span className="text-base font-bold uppercase">{keyChar === ' ' ? '␣' : keyChar}</span>
-                    <span className="text-[10px] mt-1 opacity-90">{acc}%</span>
-                    <span className="text-[9px] opacity-60">{stats.hits}h / {stats.errors}e</span>
+                    <span className="text-[0.625rem] mt-1 opacity-90">{acc}%</span>
+                    <span className="text-[0.5625rem] opacity-60">{stats.hits}h / {stats.errors}e</span>
                   </div>
                 );
               })}

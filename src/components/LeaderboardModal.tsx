@@ -3,6 +3,7 @@ import { User } from 'firebase/auth';
 import { Trophy, Medal, Crown, X, RefreshCw, Flame, Target, Zap, Clock, ShieldCheck } from 'lucide-react';
 import { ThemeConfig } from '../utils/themes';
 import { fetchLeaderboard, LeaderboardEntry } from '../firebase';
+import { UserAvatar } from './UserAvatar';
 
 interface LeaderboardModalProps {
   isOpen: boolean;
@@ -60,7 +61,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
             <div>
               <h3 className="font-bold text-base text-white flex items-center gap-2">
                 <span>Global Typist Leaderboard</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 font-medium">
+                <span className="text-[0.625rem] px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 font-medium">
                   Live Rankings
                 </span>
               </h3>
@@ -99,7 +100,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
                 <span className="text-white font-semibold">
                   {user.displayName || user.email?.split('@')[0]}
                 </span>
-                <div className="text-[11px] text-neutral-400">
+                <div className="text-[0.6875rem] text-neutral-400">
                   {userRankIndex !== -1 ? (
                     <span className="text-emerald-400 font-medium">
                       Ranked #{userRankIndex + 1} of {entries.length} typists
@@ -116,7 +117,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
                 <span className="text-base font-bold text-cyan-400">
                   {entries[userRankIndex].bestWpm} WPM
                 </span>
-                <div className="text-[10px] text-neutral-400">
+                <div className="text-[0.625rem] text-neutral-400">
                   {entries[userRankIndex].bestAccuracy}% acc
                 </div>
               </div>
@@ -133,7 +134,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
                 onClose();
                 onOpenAuth();
               }}
-              className="px-3 py-1 rounded-lg bg-cyan-400 text-neutral-950 font-bold text-[11px] hover:bg-cyan-300 transition-colors shadow-xs"
+              className="px-3 py-1 rounded-lg bg-cyan-400 text-neutral-950 font-bold text-[0.6875rem] hover:bg-cyan-300 transition-colors shadow-xs"
             >
               Sign In
             </button>
@@ -161,7 +162,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
             <div className="py-12 text-center text-xs text-neutral-400 flex flex-col items-center gap-2">
               <Trophy className="w-8 h-8 text-neutral-600" />
               <p className="font-semibold text-neutral-300">No typists ranked yet!</p>
-              <p className="text-[11px] max-w-xs text-neutral-500">
+              <p className="text-[0.6875rem] max-w-xs text-neutral-500">
                 Be the very first typist to set a record on this newly connected Maher Cloud database.
               </p>
             </div>
@@ -207,17 +208,13 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
                       </div>
 
                       {/* Avatar */}
-                      {item.photoURL ? (
-                        <img
-                          src={item.photoURL}
-                          alt={item.displayName}
-                          className="w-8 h-8 rounded-full border border-white/10 object-cover"
-                        />
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-white/10 text-white font-bold text-xs flex items-center justify-center">
-                          {item.displayName[0]?.toUpperCase() || 'T'}
-                        </div>
-                      )}
+                      <UserAvatar
+                        uid={item.userId}
+                        displayName={item.displayName}
+                        photoURL={item.photoURL}
+                        className="w-8 h-8 rounded-full border border-white/10 object-cover"
+                        textClassName="text-xs"
+                      />
 
                       {/* Name & Tests */}
                       <div>
@@ -226,12 +223,12 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
                             {item.displayName}
                           </span>
                           {isMe && (
-                            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-cyan-400 text-neutral-950 font-bold">
+                            <span className="text-[0.625rem] px-1.5 py-0.2 rounded-full bg-cyan-400 text-neutral-950 font-bold">
                               YOU
                             </span>
                           )}
                         </div>
-                        <div className="text-[11px] text-neutral-400 flex items-center gap-2">
+                        <div className="text-[0.6875rem] text-neutral-400 flex items-center gap-2">
                           <span>{item.totalTests} {item.totalTests === 1 ? 'test' : 'tests'}</span>
                           <span>&bull;</span>
                           <span>{item.bestAccuracy}% acc</span>
@@ -245,9 +242,9 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
                         <span className="text-base sm:text-lg font-bold text-cyan-400 font-mono-code">
                           {item.bestWpm}
                         </span>
-                        <span className="text-[10px] text-neutral-400 font-medium">WPM</span>
+                        <span className="text-[0.625rem] text-neutral-400 font-medium">WPM</span>
                       </div>
-                      <div className="text-[10px] text-neutral-400">
+                      <div className="text-[0.625rem] text-neutral-400">
                         Raw: {item.bestRawWpm} wpm
                       </div>
                     </div>
@@ -259,7 +256,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="pt-3 border-t border-white/10 flex items-center justify-between text-[11px] text-neutral-400 shrink-0">
+        <div className="pt-3 border-t border-white/10 flex items-center justify-between text-[0.6875rem] text-neutral-400 shrink-0">
           <span>Synced directly with typing-test-by-maher.firebaseapp.com</span>
           <button
             onClick={onClose}

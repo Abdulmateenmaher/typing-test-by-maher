@@ -23,6 +23,7 @@ import {
   resetPassword,
   logOut
 } from '../firebase';
+import { UserAvatar } from './UserAvatar';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -165,17 +166,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         {/* If User is Already Logged In */}
         {user ? (
           <div className="py-6 flex flex-col items-center gap-4 text-center">
-            {user.photoURL ? (
-              <img
-                src={user.photoURL}
-                alt="Avatar"
-                className="w-16 h-16 rounded-full border-2 border-cyan-400 object-cover shadow-lg"
-              />
-            ) : (
-              <div className="w-16 h-16 rounded-full bg-cyan-500/20 border-2 border-cyan-400 text-cyan-300 font-bold text-2xl flex items-center justify-center">
-                {(user.displayName || user.email || 'U')[0].toUpperCase()}
-              </div>
-            )}
+            <UserAvatar
+              uid={user.uid}
+              email={user.email}
+              displayName={user.displayName}
+              photoURL={user.photoURL}
+              className="w-16 h-16 rounded-full border-2 border-cyan-400 object-cover shadow-lg"
+              textClassName="text-2xl"
+            />
 
             <div>
               <h4 className="text-lg font-bold text-white">
@@ -208,25 +206,25 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                   <div>
                     <span className="font-bold text-amber-300">Firebase Domain Authorization Required</span>
-                    <p className="text-[11px] text-amber-200/80 mt-0.5">
+                    <p className="text-[0.6875rem] text-amber-200/80 mt-0.5">
                       Firebase requires you to add this website's domain to your project's Authorized Domains list.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between p-2 rounded-lg bg-black/40 border border-white/10 font-mono-code text-[11px]">
+                <div className="flex items-center justify-between p-2 rounded-lg bg-black/40 border border-white/10 font-mono-code text-[0.6875rem]">
                   <span className="text-cyan-300 truncate select-all">{currentHostname}</span>
                   <button
                     type="button"
                     onClick={handleCopyDomain}
-                    className="flex items-center gap-1 px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-white text-[10px] shrink-0 font-sans transition-colors"
+                    className="flex items-center gap-1 px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-white text-[0.625rem] shrink-0 font-sans transition-colors"
                   >
                     {domainCopied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
                     <span>{domainCopied ? 'Copied' : 'Copy'}</span>
                   </button>
                 </div>
 
-                <div className="flex items-center justify-between pt-1 border-t border-amber-500/20 text-[11px]">
+                <div className="flex items-center justify-between pt-1 border-t border-amber-500/20 text-[0.6875rem]">
                   <span className="text-neutral-400">Firebase Console &rarr; Auth &rarr; Settings &rarr; Authorized domains</span>
                   <a
                     href="https://console.firebase.google.com/project/typing-test-by-maher/authentication/settings"
@@ -268,10 +266,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <span>Continue with Google</span>
             </button>
 
-            <div className="flex items-center gap-3 text-neutral-400 text-[11px] my-0.5">
-              <div className="flex-1 h-[1px] bg-white/10" />
+            <div className="flex items-center gap-3 text-neutral-400 text-[0.6875rem] my-0.5">
+              <div className="flex-1 h-[0.0625rem] bg-white/10" />
               <span>or sign in with email</span>
-              <div className="flex-1 h-[1px] bg-white/10" />
+              <div className="flex-1 h-[0.0625rem] bg-white/10" />
             </div>
 
             {/* Error & Success Messages */}
@@ -291,7 +289,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
               {mode === 'signup' && (
                 <div className="flex flex-col gap-1">
-                  <label className="text-[11px] text-neutral-400 font-medium">Display Name / Handle</label>
+                  <label className="text-[0.6875rem] text-neutral-400 font-medium">Display Name / Handle</label>
                   <div className="relative">
                     <UserIcon className="w-4 h-4 absolute left-3 top-2.5 text-neutral-400" />
                     <input
@@ -307,7 +305,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               )}
 
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] text-neutral-400 font-medium">Email Address</label>
+                <label className="text-[0.6875rem] text-neutral-400 font-medium">Email Address</label>
                 <div className="relative">
                   <Mail className="w-4 h-4 absolute left-3 top-2.5 text-neutral-400" />
                   <input
@@ -324,7 +322,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               {mode !== 'forgot' && (
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center justify-between">
-                    <label className="text-[11px] text-neutral-400 font-medium">Password</label>
+                    <label className="text-[0.6875rem] text-neutral-400 font-medium">Password</label>
                     {mode === 'signin' && (
                       <button
                         type="button"
@@ -332,7 +330,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                           setMode('forgot');
                           resetForm();
                         }}
-                        className="text-[11px] text-cyan-400 hover:underline"
+                        className="text-[0.6875rem] text-cyan-400 hover:underline"
                       >
                         Forgot?
                       </button>

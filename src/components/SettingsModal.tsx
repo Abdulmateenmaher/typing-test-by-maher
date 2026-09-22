@@ -1,12 +1,14 @@
 import React from 'react';
-import { X, Volume2, Sliders, Type, Keyboard, Eye, Sparkles } from 'lucide-react';
+import { X, Volume2, Sliders, Type, Keyboard, Eye, Sparkles, ZoomIn } from 'lucide-react';
 import { CaretStyle, SoundProfile, TestSettings } from '../types';
 import { ThemeConfig } from '../utils/themes';
+import { ZOOM_PRESETS } from '../utils/zoom';
 
 interface SettingsModalProps {
   isOpen: boolean;
   settings: TestSettings;
   theme: ThemeConfig;
+  activeZoomPercent?: number;
   onClose: () => void;
   onUpdateSettings: (partial: Partial<TestSettings>) => void;
 }
@@ -15,6 +17,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   settings,
   theme,
+  activeZoomPercent = 100,
   onClose,
   onUpdateSettings
 }) => {
@@ -75,7 +78,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   }`}
                 >
                   <div className="font-semibold text-xs text-neutral-200">{sw.label}</div>
-                  <div className="text-[10px] text-neutral-400 mt-0.5">{sw.desc}</div>
+                  <div className="text-[0.625rem] text-neutral-400 mt-0.5">{sw.desc}</div>
                 </button>
               ))}
             </div>
@@ -96,7 +99,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             )}
           </div>
 
-          <div className="w-full h-[1px] bg-white/5" />
+          <div className="w-full h-[0.0625rem] bg-white/5" />
 
           {/* Section: Visuals & Caret */}
           <div className="flex flex-col gap-3">
@@ -142,7 +145,36 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           </div>
 
-          <div className="w-full h-[1px] bg-white/5" />
+          {/* Section: Display Zoom */}
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2 font-semibold text-white text-sm">
+              <ZoomIn className="w-4 h-4 text-cyan-400" />
+              <span>Display Zoom & Scaling</span>
+            </div>
+            <p className="text-neutral-400 text-xs">
+              {settings.zoom === 'auto'
+                ? `Auto keeps the whole interface fitted to your browser window (currently ${activeZoomPercent}%).`
+                : `Manual zoom of ${settings.zoom}% is applied to the whole interface.`}
+            </p>
+
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+              {ZOOM_PRESETS.map((preset) => (
+                <button
+                  key={String(preset.value)}
+                  onClick={() => onUpdateSettings({ zoom: preset.value })}
+                  className={`p-2.5 rounded-xl border text-center font-semibold transition-all ${
+                    settings.zoom === preset.value
+                      ? 'border-cyan-500/40 bg-cyan-500/15 text-cyan-300'
+                      : 'border-white/5 bg-white/[0.02] text-neutral-400 hover:bg-white/[0.05]'
+                  }`}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="w-full h-[0.0625rem] bg-white/5" />
 
           {/* Section: Touch Typing Aids */}
           <div className="flex flex-col gap-3">
@@ -154,7 +186,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <label className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5 cursor-pointer">
               <div>
                 <div className="text-neutral-200 font-medium">Show On-Screen Virtual Keyboard</div>
-                <div className="text-[11px] text-neutral-400 mt-0.5">Displays interactive QWERTY layout with active target key highlighting</div>
+                <div className="text-[0.6875rem] text-neutral-400 mt-0.5">Displays interactive QWERTY layout with active target key highlighting</div>
               </div>
               <input
                 type="checkbox"
@@ -167,7 +199,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <label className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5 cursor-pointer">
               <div>
                 <div className="text-neutral-200 font-medium">Ergonomic Finger Placement Guidance</div>
-                <div className="text-[11px] text-neutral-400 mt-0.5">Color codes home-row finger assignments (Pinky, Ring, Middle, Index, Thumbs)</div>
+                <div className="text-[0.6875rem] text-neutral-400 mt-0.5">Color codes home-row finger assignments (Pinky, Ring, Middle, Index, Thumbs)</div>
               </div>
               <input
                 type="checkbox"
@@ -178,7 +210,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </label>
           </div>
 
-          <div className="w-full h-[1px] bg-white/5" />
+          <div className="w-full h-[0.0625rem] bg-white/5" />
 
           {/* Section: Dictionary & Live HUD */}
           <div className="flex flex-col gap-3">
@@ -190,7 +222,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5">
               <div>
                 <div className="text-neutral-200 font-medium">English Vocabulary Tier</div>
-                <div className="text-[11px] text-neutral-400 mt-0.5">Complexity of generated word pool</div>
+                <div className="text-[0.6875rem] text-neutral-400 mt-0.5">Complexity of generated word pool</div>
               </div>
               <select
                 value={settings.vocabulary}

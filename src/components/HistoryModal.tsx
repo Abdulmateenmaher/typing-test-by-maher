@@ -85,7 +85,7 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({
         {/* Lifetime Stats Overview */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-5 border-b border-white/10 bg-white/[0.02]">
           <div className="p-3 rounded-xl border border-white/5 bg-white/[0.02]">
-            <div className="text-[11px] text-neutral-400 flex items-center gap-1.5">
+            <div className="text-[0.6875rem] text-neutral-400 flex items-center gap-1.5">
               <Trophy className="w-3.5 h-3.5 text-amber-400" />
               <span>Personal Best</span>
             </div>
@@ -93,7 +93,7 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({
           </div>
 
           <div className="p-3 rounded-xl border border-white/5 bg-white/[0.02]">
-            <div className="text-[11px] text-neutral-400 flex items-center gap-1.5">
+            <div className="text-[0.6875rem] text-neutral-400 flex items-center gap-1.5">
               <TrendingUp className="w-3.5 h-3.5 text-cyan-400" />
               <span>Avg (Last 10)</span>
             </div>
@@ -101,7 +101,7 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({
           </div>
 
           <div className="p-3 rounded-xl border border-white/5 bg-white/[0.02]">
-            <div className="text-[11px] text-neutral-400 flex items-center gap-1.5">
+            <div className="text-[0.6875rem] text-neutral-400 flex items-center gap-1.5">
               <Target className="w-3.5 h-3.5 text-emerald-400" />
               <span>Avg Accuracy</span>
             </div>
@@ -109,7 +109,7 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({
           </div>
 
           <div className="p-3 rounded-xl border border-white/5 bg-white/[0.02]">
-            <div className="text-[11px] text-neutral-400 flex items-center gap-1.5">
+            <div className="text-[0.6875rem] text-neutral-400 flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-purple-400" />
               <span>Practice Time</span>
             </div>
@@ -144,7 +144,7 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({
                       <td className="py-2.5 font-bold text-cyan-400 flex items-center gap-1.5">
                         <span>{item.wpm}</span>
                         {item.wpm === bestWpm && (
-                          <span className="text-[10px] px-1.5 py-0.2 bg-amber-400/20 text-amber-300 rounded border border-amber-400/30">
+                          <span className="text-[0.625rem] px-1.5 py-0.2 bg-amber-400/20 text-amber-300 rounded border border-amber-400/30">
                             PB
                           </span>
                         )}

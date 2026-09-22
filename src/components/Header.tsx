@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { SoundProfile, TestSettings, ThemeId } from '../types';
 import { THEMES, ThemeConfig } from '../utils/themes';
+import { UserAvatar } from './UserAvatar';
 
 interface HeaderProps {
   settings: TestSettings;
@@ -58,11 +59,11 @@ export const Header: React.FC<HeaderProps> = ({
             <h1 className="text-lg sm:text-xl font-black tracking-tight text-white leading-tight">
               typing test <span className="text-cyan-400 font-extrabold">by maher</span>
             </h1>
-            <span className="hidden sm:inline-block px-1.5 py-0.2 rounded-full text-[9px] font-bold tracking-widest uppercase bg-cyan-400/10 text-cyan-300 border border-cyan-400/20">
+            <span className="hidden sm:inline-block px-1.5 py-0.2 rounded-full text-[0.5625rem] font-bold tracking-widest uppercase bg-cyan-400/10 text-cyan-300 border border-cyan-400/20">
               PRO
             </span>
           </div>
-          <p className="text-[11px] text-neutral-400 hidden md:block">
+          <p className="text-[0.6875rem] text-neutral-400 hidden md:block">
             Benchmark & adaptive touch-typing coach &bull; Cloud Powered
           </p>
         </div>
@@ -150,18 +151,15 @@ export const Header: React.FC<HeaderProps> = ({
             className="flex items-center gap-1.5 pl-1.5 pr-2.5 py-1 rounded-xl border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 text-neutral-200 transition-colors group"
             title={`Logged in as ${user.displayName || user.email}`}
           >
-            {user.photoURL ? (
-              <img
-                src={user.photoURL}
-                alt={user.displayName || 'User'}
-                className="w-5 h-5 rounded-full object-cover border border-cyan-400"
-              />
-            ) : (
-              <div className="w-5 h-5 rounded-full bg-cyan-500/30 text-cyan-300 font-bold text-[10px] flex items-center justify-center">
-                {(user.displayName || user.email || 'U')[0].toUpperCase()}
-              </div>
-            )}
-            <span className="text-xs font-semibold max-w-[80px] sm:max-w-[110px] truncate text-white">
+            <UserAvatar
+              uid={user.uid}
+              email={user.email}
+              displayName={user.displayName}
+              photoURL={user.photoURL}
+              className="w-5 h-5 rounded-full object-cover border border-cyan-400"
+              textClassName="text-[0.625rem]"
+            />
+            <span className="text-xs font-semibold max-w-[5rem] sm:max-w-[6.875rem] truncate text-white">
               {user.displayName?.split(' ')[0] || user.email?.split('@')[0]}
             </span>
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse ml-0.5" title="Cloud Synced" />

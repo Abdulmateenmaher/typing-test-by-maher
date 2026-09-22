@@ -77,7 +77,7 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
           <span>nums</span>
         </button>
 
-        <div className="w-[1px] h-4 bg-white/10 mx-1" />
+        <div className="w-[0.0625rem] h-4 bg-white/10 mx-1" />
 
         {/* Time mode */}
         <button

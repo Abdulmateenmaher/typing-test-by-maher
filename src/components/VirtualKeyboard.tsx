@@ -107,7 +107,7 @@ const KEYBOARD_ROWS: KeyDef[][] = [
   [
     { key: 'Control', display: 'ctrl', finger: 0, width: 'w-9 sm:w-10' },
     { key: 'Alt', display: 'alt', finger: 0, width: 'w-8 sm:w-9' },
-    { key: ' ', display: 'space', finger: 4, width: 'flex-1 max-w-[170px] sm:max-w-[220px]' },
+    { key: ' ', display: 'space', finger: 4, width: 'flex-1 max-w-[10.625rem] sm:max-w-[13.75rem]' },
     { key: 'AltRight', display: 'alt', finger: 8, width: 'w-8 sm:w-9' },
     { key: 'ControlRight', display: 'ctrl', finger: 8, width: 'w-9 sm:w-10' }
   ]
@@ -145,21 +145,21 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
     <div className={`w-full max-w-2xl mx-auto p-2.5 sm:p-3 rounded-xl border ${theme.border} ${theme.cardBg} transition-all duration-200 select-none shadow-sm`}>
       {/* Finger guide bar - sleek and compact */}
       {showFingerGuide && activeFingerIndex !== -1 && (
-        <div className="flex items-center justify-between px-1 pb-1.5 mb-1.5 border-b border-white/5 text-[11px]">
+        <div className="flex items-center justify-between px-1 pb-1.5 mb-1.5 border-b border-white/5 text-[0.6875rem]">
           <div className="flex items-center gap-1.5">
             <span className="text-neutral-400">Target Finger:</span>
-            <span className={`font-semibold tracking-wide px-2 py-0.2 rounded-full border bg-white/5 text-[10px] sm:text-[11px] ${FINGER_COLORS[activeFingerIndex]}`}>
+            <span className={`font-semibold tracking-wide px-2 py-0.2 rounded-full border bg-white/5 text-[0.625rem] sm:text-[0.6875rem] ${FINGER_COLORS[activeFingerIndex]}`}>
               {FINGER_NAMES[activeFingerIndex]}
             </span>
           </div>
-          <div className="text-neutral-400 text-[10px] hidden sm:block">
+          <div className="text-neutral-400 text-[0.625rem] hidden sm:block">
             Home row: A S D F &bull; J K L ;
           </div>
         </div>
       )}
 
       {/* Keyboard Grid - compact height & width */}
-      <div className="flex flex-col gap-1 font-mono-code text-[11px]">
+      <div className="flex flex-col gap-1 font-mono-code text-[0.6875rem]">
         {KEYBOARD_ROWS.map((row, rowIdx) => (
           <div key={rowIdx} className="flex justify-center gap-1 w-full">
             {row.map((item, keyIdx) => {
@@ -190,13 +190,13 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
                     ${fingerStyle}
                   `}
                 >
-                  <span className="uppercase text-[10px] sm:text-[11px] font-medium leading-none">
+                  <span className="uppercase text-[0.625rem] sm:text-[0.6875rem] font-medium leading-none">
                     {item.display || item.key}
                   </span>
 
                   {/* Tactile F & J home row nubs */}
                   {item.hasNub && (
-                    <span className="absolute bottom-0.5 w-2 h-[1.5px] bg-neutral-400/80 rounded-full" />
+                    <span className="absolute bottom-0.5 w-2 h-[0.09375rem] bg-neutral-400/80 rounded-full" />
                   )}
                 </div>
               );
