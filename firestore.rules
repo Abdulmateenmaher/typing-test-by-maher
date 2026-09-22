@@ -1,0 +1,40 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // User Profile
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+
+      // User's private test history
+      match /tests/{testId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // Public Global Leaderboard Rankings
+    match /leaderboard/{userId} {
+      allow read: if true;
+      allow create, update: if isOwner(userId)
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.bestWpm is number
+        && request.resource.data.bestWpm >= 0
+        && request.resource.data.bestWpm <= 400
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() <= 64;
+      allow delete: if isOwner(userId);
+    }
+  }
+}

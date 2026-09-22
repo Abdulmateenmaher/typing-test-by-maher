@@ -1,0 +1,73 @@
+{
+  "entities": {
+    "UserTest": {
+      "title": "UserTest",
+      "description": "Historical typing test result for an authenticated user",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "wpm": { "type": "number" },
+        "rawWpm": { "type": "number" },
+        "accuracy": { "type": "number" },
+        "consistency": { "type": "number" },
+        "correctChars": { "type": "number" },
+        "incorrectChars": { "type": "number" },
+        "extraChars": { "type": "number" },
+        "missedChars": { "type": "number" },
+        "totalChars": { "type": "number" },
+        "duration": { "type": "number" },
+        "mode": { "type": "string", "maxLength": 32 },
+        "modeDetail": { "type": "string", "maxLength": 64 },
+        "difficulty": { "type": "string", "maxLength": 32 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "wpm", "rawWpm", "accuracy", "mode", "difficulty"]
+    },
+    "LeaderboardEntry": {
+      "title": "LeaderboardEntry",
+      "description": "Public ranking entry for global typist leaderboard",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "displayName": { "type": "string", "maxLength": 64 },
+        "photoURL": { "type": "string", "maxLength": 512 },
+        "bestWpm": { "type": "number" },
+        "bestRawWpm": { "type": "number" },
+        "bestAccuracy": { "type": "number" },
+        "totalTests": { "type": "number" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "displayName", "bestWpm", "totalTests"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with preferences and personal best records",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 128 },
+        "displayName": { "type": "string", "maxLength": 64 },
+        "photoURL": { "type": "string", "maxLength": 512 },
+        "bestWpm": { "type": "number" },
+        "totalTests": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "email"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/tests/{testId}": {
+      "schema": { "$ref": "#/entities/UserTest" },
+      "description": "Typing test history private to the individual user"
+    },
+    "/leaderboard/{userId}": {
+      "schema": { "$ref": "#/entities/LeaderboardEntry" },
+      "description": "Public leaderboard rankings showing best typists worldwide"
+    },
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Private profile document for user account"
+    }
+  }
+}

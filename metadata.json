@@ -1,0 +1,6 @@
+{
+  "name": "Typing Test by Maher",
+  "description": "An advanced English typing test featuring real-time accuracy and WPM tracking, progress charts, customizable difficulty settings, and detailed keyboard analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
