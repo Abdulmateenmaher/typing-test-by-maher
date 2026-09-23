@@ -1,8 +1,50 @@
 @import "tailwindcss";
 
 @layer base {
+  html,
+  body,
+  #root {
+    min-width: 100%;
+    min-height: 100%;
+  }
+
   body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+  }
+}
+
+/* Keep the desktop shell fluid. The previous max-width/overflow combination
+   could crop the navigation and made the game feel locked to a fixed canvas. */
+@media (min-width: 640px) {
+  header {
+    width: 100% !important;
+    max-width: none !important;
+    padding-inline: clamp(1rem, 4vw, 4rem) !important;
+    overflow: visible !important;
+  }
+
+  header > div:last-child {
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  main {
+    width: 100% !important;
+    max-width: none !important;
+    padding-inline: clamp(1rem, 4vw, 4rem) !important;
+  }
+
+  /* ArcadeGame's outer wrapper should use the available viewport width. */
+  main > div[class*="max-w-4xl"] {
+    max-width: none !important;
+  }
+
+  /* Use the available vertical space while retaining a sensible minimum and
+     maximum for very short/tall displays. */
+  main > div[class*="max-w-4xl"] [class*="h-[24rem]"] {
+    height: clamp(24rem, calc(100svh - 13rem), 48rem) !important;
   }
 }
 
