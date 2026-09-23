@@ -13,7 +13,9 @@ import {
   User as UserIcon,
   CloudCheck,
   Gamepad2,
-  Globe
+  Globe,
+  GraduationCap,
+  Flag
 } from 'lucide-react';
 import { SoundProfile, SupportedLanguage, TestSettings, ThemeId } from '../types';
 import { THEMES, ThemeConfig } from '../utils/themes';
@@ -51,7 +53,7 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="w-full max-w-5xl mx-auto flex items-center justify-between gap-2 px-3 sm:px-6 py-2.5 sm:py-3 select-none flex-nowrap overflow-hidden">
+    <header className="w-full max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 px-3 sm:px-6 py-2.5 sm:py-3 select-none overflow-visible">
       {/* Brand Title */}
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-black font-black shadow-lg shadow-cyan-500/20 shrink-0">
@@ -72,8 +74,8 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Stats Quick Badges & Controls */}
-      <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 shrink-0">
+      {/* Stats Quick Badges & Controls - Wrapped gracefully */}
+      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 justify-end">
         {/* Personal Best Chip */}
         {personalBestWpm > 0 && (
           <button
@@ -86,20 +88,65 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         )}
 
-        {/* 🎮 ARCADE RUSH PROMINENT LAUNCH BUTTON - Immediately visible on desktop & mobile */}
+        {/* 🎮 UNIFIED TYPING GAMES HUB BUTTON (Speedway, Cyber Word Strike, Bomb Defusal, Word Rain) */}
+        <button
+          onClick={() =>
+            onUpdateSettings({
+              mode:
+                settings.mode === 'games' ||
+                settings.mode === 'race' ||
+                settings.mode === 'arcade' ||
+                settings.mode === 'bomb-defusal' ||
+                settings.mode === 'word-rain'
+                  ? 'time'
+                  : 'games'
+            })
+          }
+          className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-bold transition-all shadow-md min-h-[38px] ${
+            settings.mode === 'games'
+              ? 'border-cyan-400 bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 text-neutral-950 scale-105 shadow-cyan-500/25 ring-2 ring-cyan-400/50'
+              : 'border-cyan-400/40 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 hover:text-white'
+          }`}
+          title="Open Maher Typing Arcadia & Games Hub (4 Games)"
+        >
+          <Gamepad2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+          <span className="font-black tracking-tight">GAMES</span>
+          <span className="px-1.5 py-0.2 rounded bg-cyan-400 text-neutral-950 text-[0.5625rem] font-black tracking-tighter">
+            4
+          </span>
+        </button>
+
+        {/* 🕹️ CYBER WORD STRIKE (ORIGINAL ARCADE GAME) */}
         <button
           onClick={() => onUpdateSettings({ mode: settings.mode === 'arcade' ? 'time' : 'arcade' })}
           className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-bold transition-all shadow-md min-h-[38px] ${
             settings.mode === 'arcade'
-              ? 'border-amber-400 bg-gradient-to-r from-amber-400 to-rose-500 text-neutral-950 scale-105 shadow-amber-500/25 ring-2 ring-amber-400/50'
+              ? 'border-amber-400 bg-gradient-to-r from-amber-400 via-rose-500 to-purple-600 text-neutral-950 scale-105 shadow-amber-500/25 ring-2 ring-amber-400/50'
               : 'border-amber-400/40 bg-gradient-to-r from-amber-500/15 via-rose-500/15 to-purple-500/15 hover:from-amber-500/25 hover:to-rose-500/25 text-amber-300 hover:text-white hover:border-amber-400/60'
           }`}
-          title="Play Cyber Strike Arcade Game"
+          title="Play Cyber Word Strike (Original Wave Defense Arcade Game)"
         >
           <Gamepad2 className="w-4 h-4 text-amber-400 shrink-0 animate-pulse" />
-          <span className="font-black tracking-tight">ARCADE</span>
-          <span className="px-1 py-0.2 rounded bg-amber-400 text-neutral-950 text-[0.5625rem] font-black uppercase tracking-tighter">
-            GAME
+          <span className="font-black tracking-tight">CYBER WORD STRIKE</span>
+          <span className="hidden sm:inline px-1 py-0.2 rounded bg-amber-400 text-neutral-950 text-[0.5625rem] font-black uppercase tracking-tighter">
+            ARCADE
+          </span>
+        </button>
+
+        {/* 🎓 TOUCH-TYPING LESSONS BUTTON (100 Lessons) */}
+        <button
+          onClick={() => onUpdateSettings({ mode: settings.mode === 'lessons' ? 'time' : 'lessons' })}
+          className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl border text-xs font-bold transition-all shadow-md min-h-[38px] ${
+            settings.mode === 'lessons'
+              ? 'border-purple-400 bg-gradient-to-r from-purple-500 to-indigo-600 text-white scale-105 shadow-purple-500/25 ring-2 ring-purple-400/50'
+              : 'border-purple-400/40 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 hover:text-white'
+          }`}
+          title="Open Touch-Typing Curriculum & Lessons (100 Lessons)"
+        >
+          <GraduationCap className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+          <span className="font-black tracking-tight">LESSONS</span>
+          <span className="hidden sm:inline px-1 py-0.2 rounded bg-purple-400 text-neutral-950 text-[0.5625rem] font-black uppercase tracking-tighter">
+            100
           </span>
         </button>
 

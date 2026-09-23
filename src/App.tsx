@@ -34,6 +34,13 @@ import { DrillsModal } from './components/DrillsModal';
 import { AuthModal } from './components/AuthModal';
 import { LeaderboardModal } from './components/LeaderboardModal';
 import { ArcadeGame } from './components/ArcadeGame';
+import { TypingRaceGame } from './components/TypingRaceGame';
+import { LessonsProgram } from './components/LessonsProgram';
+import { GamesHub } from './components/GamesHub';
+import { BombDefusalGame } from './components/BombDefusalGame';
+import { WordRainGame } from './components/WordRainGame';
+import { validateTestScore, MAX_HUMAN_WPM, MAX_HUMAN_RAW_WPM } from './utils/antiCheat';
+import { ShieldAlert, X } from 'lucide-react';
 
 const DEFAULT_SETTINGS: TestSettings = {
   mode: 'time',
@@ -50,8 +57,9 @@ const DEFAULT_SETTINGS: TestSettings = {
   soundVolume: 0.5,
   errorBeep: false,
   theme: 'maher-obsidian',
+  themeMode: 'dark',
   caretStyle: 'line',
-  fontSize: 'md',
+  fontSize: 'lg',
   zoom: 'auto',
   showVirtualKeyboard: true,
   showFingerGuide: true,
@@ -108,6 +116,7 @@ export default function App() {
   const [pressedKey, setPressedKey] = useState<string>('');
   const [lastResult, setLastResult] = useState<TestResult | null>(null);
   const [activeDrillTitle, setActiveDrillTitle] = useState<string>('');
+  const [securityNotice, setSecurityNotice] = useState<string | null>(null);
 
   // Subscribe to Firebase Auth State & Cloud Sync
   useEffect(() => {
@@ -261,6 +270,17 @@ export default function App() {
 
   // Complete test handler
   const handleFinishTest = async (result: TestResult) => {
+    // Anti-Cheat: Validate test authenticity against console scripts and superhuman manipulation
+    const scoreCheck = validateTestScore(result.wpm, result.rawWpm, result.duration, result.totalChars, result.accuracy);
+    if (!scoreCheck.safe || result.wpm > MAX_HUMAN_WPM || result.rawWpm > MAX_HUMAN_RAW_WPM) {
+      setSecurityNotice(
+        `⚠️ Security Flag: This test result (${result.wpm} WPM) has been disqualified by Anti-Cheat Security. ` +
+        (scoreCheck.reason || `Velocity exceeds human biological limits (Max ${MAX_HUMAN_WPM} WPM).`)
+      );
+      setTimeout(() => setSecurityNotice(null), 9000);
+      return;
+    }
+
     const isNewPB = result.wpm > personalBestWpm && result.wpm > 0;
     const finalResult = { ...result, isPersonalBest: isNewPB };
 
@@ -417,6 +437,23 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 w-full max-w-5xl mx-auto px-3 sm:px-6 py-2 sm:py-3 flex flex-col justify-center gap-3 sm:gap-3.5">
+        {/* Anti-Cheat Security Notice Alert Banner */}
+        {securityNotice && (
+          <div className="w-full max-w-4xl mx-auto flex items-center justify-between p-3 px-4 rounded-2xl border-2 border-rose-500/60 bg-rose-950/80 text-rose-200 text-xs shadow-xl shadow-rose-950/50 animate-shake">
+            <div className="flex items-center gap-2.5">
+              <ShieldAlert className="w-5 h-5 text-rose-400 shrink-0 animate-pulse" />
+              <span className="font-semibold">{securityNotice}</span>
+            </div>
+            <button
+              onClick={() => setSecurityNotice(null)}
+              className="p-1 rounded-lg hover:bg-rose-500/20 text-rose-300 hover:text-white transition-colors cursor-pointer"
+              title="Dismiss alert"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
         {/* Active Custom Drill Notification Banner */}
         {settings.mode === 'drill' && activeDrillTitle && !lastResult && (
           <div className="w-full max-w-4xl mx-auto flex items-center justify-between p-2.5 px-3.5 rounded-xl border border-purple-500/30 bg-purple-500/10 text-xs text-purple-200">
@@ -433,8 +470,8 @@ export default function App() {
           </div>
         )}
 
-        {/* Mode Selector Toolbar (visible when not playing Arcade or showing Results) */}
-        {!lastResult && settings.mode !== 'arcade' && (
+        {/* Mode Selector Toolbar (visible when in classic typing test modes) */}
+        {!lastResult && !['arcade', 'race', 'bomb-defusal', 'word-rain', 'games', 'lessons'].includes(settings.mode) && (
           <ModeSelector
             settings={settings}
             theme={currentTheme}
@@ -443,15 +480,54 @@ export default function App() {
           />
         )}
 
-        {/* View Switch: Arcade Rush Mode vs Classic Test vs Results View */}
-        {settings.mode === 'arcade' ? (
+        {/* View Switch: Games Hub vs Speedway Race vs Retro Arcade vs Bomb Defusal vs Word Rain vs Lessons vs Classic Test vs Results */}
+        {settings.mode === 'games' ? (
+          <GamesHub
+            settings={settings}
+            theme={currentTheme}
+            onSelectGame={(selectedMode) => setSettings((prev) => ({ ...prev, mode: selectedMode }))}
+            onExit={() => setSettings((prev) => ({ ...prev, mode: 'time' }))}
+          />
+        ) : settings.mode === 'arcade' ? (
           <ArcadeGame
             theme={currentTheme}
             sound={settings.sound}
             soundVolume={settings.soundVolume}
             language={settings.language}
             onExit={() => setSettings((prev) => ({ ...prev, mode: 'time' }))}
+            onBackToGames={() => setSettings((prev) => ({ ...prev, mode: 'games' }))}
+            onSwitchGame={(selectedMode) => setSettings((prev) => ({ ...prev, mode: selectedMode }))}
             onSaveScore={handleSaveArcadeScore}
+          />
+        ) : settings.mode === 'race' ? (
+          <TypingRaceGame
+            settings={settings}
+            theme={currentTheme}
+            onExit={() => setSettings((prev) => ({ ...prev, mode: 'time' }))}
+            onBackToGames={() => setSettings((prev) => ({ ...prev, mode: 'games' }))}
+            onSwitchGame={(selectedMode) => setSettings((prev) => ({ ...prev, mode: selectedMode }))}
+          />
+        ) : settings.mode === 'bomb-defusal' ? (
+          <BombDefusalGame
+            settings={settings}
+            theme={currentTheme}
+            onExit={() => setSettings((prev) => ({ ...prev, mode: 'time' }))}
+            onBackToGames={() => setSettings((prev) => ({ ...prev, mode: 'games' }))}
+            onSwitchGame={(selectedMode) => setSettings((prev) => ({ ...prev, mode: selectedMode }))}
+          />
+        ) : settings.mode === 'word-rain' ? (
+          <WordRainGame
+            settings={settings}
+            theme={currentTheme}
+            onExit={() => setSettings((prev) => ({ ...prev, mode: 'time' }))}
+            onBackToGames={() => setSettings((prev) => ({ ...prev, mode: 'games' }))}
+            onSwitchGame={(selectedMode) => setSettings((prev) => ({ ...prev, mode: selectedMode }))}
+          />
+        ) : settings.mode === 'lessons' ? (
+          <LessonsProgram
+            settings={settings}
+            theme={currentTheme}
+            onExit={() => setSettings((prev) => ({ ...prev, mode: 'time' }))}
           />
         ) : lastResult ? (
           <ResultsView
@@ -476,8 +552,8 @@ export default function App() {
           />
         )}
 
-        {/* Interactive Virtual Keyboard (if enabled & not on results screen & not in arcade mode) */}
-        {!lastResult && settings.mode !== 'arcade' && settings.showVirtualKeyboard && (
+        {/* Interactive Virtual Keyboard (if enabled & not on results screen & in classic typing area modes) */}
+        {!lastResult && !['arcade', 'race', 'bomb-defusal', 'word-rain', 'games', 'lessons'].includes(settings.mode) && settings.showVirtualKeyboard && (
           <VirtualKeyboard
             currentKey={currentKey}
             theme={currentTheme}
