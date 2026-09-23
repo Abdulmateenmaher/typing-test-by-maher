@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { RotateCcw, AlertOctagon, Sparkles } from 'lucide-react';
+import { RotateCcw, AlertOctagon, Sparkles, Keyboard as KeyboardIcon } from 'lucide-react';
 import {
   CaretStyle,
   DifficultyMode,
@@ -11,6 +11,8 @@ import {
 import { ThemeConfig } from '../utils/themes';
 import { BASE_FONT_SIZE } from '../utils/zoom';
 import { playErrorSound, playFinishFanfare, playKeySound } from '../utils/audio';
+import { isRtlLanguage } from '../utils/words';
+import { GhostRacerTrack } from './GhostRacerTrack';
 
 interface TypingAreaProps {
   words: string[];
@@ -62,16 +64,68 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const activeWordRef = useRef<HTMLSpanElement | null>(null);
+  const prevTargetKeyRef = useRef<string>('');
+
+  // Full reset function for internal state
+  const resetInternalState = useCallback(() => {
+    setWordIndex(0);
+    setInputVal('');
+    setHistory([]);
+    setIsActive(false);
+    setIsFailed(false);
+    setFailureReason('');
+    setStartTime(null);
+    setElapsedTime(0);
+    setTimeLeft(settings.mode === 'time' ? settings.timeDuration : 0);
+    setLiveWpm(0);
+    setLiveRawWpm(0);
+    setLiveAccuracy(100);
+    timelineRef.current = [];
+    keyStatsRef.current = {};
+    lastKeyTimeRef.current = null;
+    mistypedWordsRef.current = new Set();
+    secondErrorCountRef.current = 0;
+    totalCorrectCharsRef.current = 0;
+    totalIncorrectCharsRef.current = 0;
+    totalExtraCharsRef.current = 0;
+    if (containerRef.current) {
+      containerRef.current.scrollTo({ top: 0, behavior: 'auto' });
+    }
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 20);
+  }, [settings.mode, settings.timeDuration]);
+
+  // Reset internal state whenever words change or settings change
+  useEffect(() => {
+    resetInternalState();
+  }, [words, resetInternalState]);
+
+  // Global window shortcut listener for restart (especially when failed or blurred)
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' || (e.key === 'Tab' && !e.shiftKey)) {
+        e.preventDefault();
+        resetInternalState();
+        onRestartTest();
+      } else if (isFailed && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault();
+        resetInternalState();
+        onRestartTest();
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [isFailed, resetInternalState, onRestartTest]);
 
   // Target Key determination for Virtual Keyboard
   useEffect(() => {
     const currentWord = words[wordIndex] || '';
-    if (inputVal.length < currentWord.length) {
-      const nextChar = currentWord[inputVal.length];
+    const nextChar = inputVal.length < currentWord.length ? currentWord[inputVal.length] : ' ';
+    if (nextChar !== prevTargetKeyRef.current) {
+      prevTargetKeyRef.current = nextChar;
       onCurrentKeyChange(nextChar);
-    } else {
-      // Space to move to next word
-      onCurrentKeyChange(' ');
     }
   }, [wordIndex, inputVal, words, onCurrentKeyChange]);
 
@@ -137,10 +191,10 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
         setLiveRawWpm(curRawWpm);
         setLiveAccuracy(curAcc);
 
-        // Check Master Difficulty (Strict > 90% accuracy)
-        if (settings.difficulty === 'master' && secondsElapsed > 5 && curAcc < 90) {
+        // Check Master Difficulty (Strict > 95% accuracy)
+        if (settings.difficulty === 'master' && secondsElapsed > 3 && curAcc < 95) {
           setIsFailed(true);
-          setFailureReason('Master mode failed: Accuracy dropped below 90%');
+          setFailureReason('Master mode failed: Accuracy dropped below 95%');
           playErrorSound(settings.soundVolume);
           return;
         }
@@ -226,6 +280,34 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
     [elapsedTime, startTime, wordIndex, words, settings, onFinishTest]
   );
 
+  // Advance word handler (called by spacebar, mobile input, or mobile button)
+  const advanceWord = useCallback(() => {
+    if (inputVal.length === 0) return;
+    playKeySound(settings.sound, settings.soundVolume, true);
+
+    const newHistory = [...history, inputVal];
+    setHistory(newHistory);
+    setInputVal('');
+
+    const nextIndex = wordIndex + 1;
+    setWordIndex(nextIndex);
+
+    if (settings.mode === 'words' && nextIndex >= settings.wordCount) {
+      handleComplete();
+    } else if (nextIndex >= words.length) {
+      handleComplete();
+    }
+  }, [inputVal, history, wordIndex, settings, words, handleComplete]);
+
+  // Handle backspace (hardware or touch)
+  const handleBackspace = useCallback(() => {
+    if (settings.difficulty === 'no-backspace') {
+      playErrorSound(settings.soundVolume);
+      return;
+    }
+    setInputVal((prev) => prev.slice(0, -1));
+  }, [settings.difficulty, settings.soundVolume]);
+
   // Handle Input Changes & Key Strokes
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     // Quick Reset Shortcuts: Tab + Enter or Escape
@@ -265,7 +347,7 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
 
     const currentWord = words[wordIndex] || '';
 
-    // Record Key Latency & Stats
+    // Record Key Latency & Stats for normal printable keys
     if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
       const now = Date.now();
       const latency = lastKeyTimeRef.current ? Math.min(1000, now - lastKeyTimeRef.current) : 150;
@@ -310,24 +392,7 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
     // Spacebar: advance to next word
     if (e.key === ' ') {
       e.preventDefault();
-      if (inputVal.length === 0) return; // Don't advance on empty space
-
-      playKeySound(settings.sound, settings.soundVolume, true);
-
-      // Save to history
-      const newHistory = [...history, inputVal];
-      setHistory(newHistory);
-      setInputVal('');
-
-      const nextIndex = wordIndex + 1;
-      setWordIndex(nextIndex);
-
-      // Check if words mode is completed
-      if (settings.mode === 'words' && nextIndex >= settings.wordCount) {
-        handleComplete();
-      } else if (nextIndex >= words.length) {
-        handleComplete();
-      }
+      advanceWord();
       return;
     }
   };
@@ -335,6 +400,25 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isFailed) return;
     const val = e.target.value;
+
+    // Mobile Virtual Keyboard handling: Detect trailing space or input composition
+    if (val.endsWith(' ')) {
+      if (inputVal.length > 0) {
+        advanceWord();
+        return;
+      } else {
+        setInputVal('');
+        return;
+      }
+    }
+
+    // If test not active, start on first input
+    if (!isActive && val.length > 0 && !isFailed) {
+      setIsActive(true);
+      setStartTime(Date.now());
+      lastKeyTimeRef.current = Date.now();
+    }
+
     setInputVal(val);
 
     // If on quote or code mode, check if we hit the very end of the final word
@@ -347,7 +431,125 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
   };
 
   // Render individual words with Zero-Latency Inline Caret
-  const renderWord = (word: string, idx: number) => {
+  const isRTL = isRtlLanguage(settings.language || 'english');
+
+  // Dedicated RTL word renderer preserving 100% authentic cursive ligatures & RTL cursor
+  const renderRtlWord = (word: string, idx: number) => {
+    const isCurrent = idx === wordIndex;
+    const isPast = idx < wordIndex;
+    const typedWord = isPast ? history[idx] : isCurrent ? inputVal : '';
+
+    if (isPast) {
+      const isCorrect = typedWord === word;
+      return (
+        <span
+          key={idx}
+          dir="rtl"
+          className="inline-block ml-3.5 mb-2.5 font-rtl text-xl sm:text-2xl select-none"
+        >
+          <span className={isCorrect ? theme.correct : `${theme.incorrect} underline decoration-rose-500`}>
+            {word}
+          </span>
+        </span>
+      );
+    }
+
+    if (!isCurrent) {
+      // Future untyped word: single unbroken string, naturally connected ligatures
+      return (
+        <span
+          key={idx}
+          dir="rtl"
+          className={`inline-block ml-3.5 mb-2.5 font-rtl text-xl sm:text-2xl select-none ${theme.textMuted}`}
+        >
+          {word}
+        </span>
+      );
+    }
+
+    // Active Current Word in RTL:
+    // Partition typed input into matched & error segments without breaking font rendering
+    const typedLen = inputVal.length;
+    let matchLen = 0;
+    while (matchLen < typedLen && matchLen < word.length && inputVal[matchLen] === word[matchLen]) {
+      matchLen++;
+    }
+
+    const matchedPrefix = word.slice(0, matchLen);
+    const hasError = typedLen > matchLen;
+    const errorChars = hasError ? (typedLen <= word.length ? word.slice(matchLen, typedLen) : word.slice(matchLen)) : '';
+    const extraTyped = typedLen > word.length ? inputVal.slice(word.length) : '';
+    const untypedRemaining = word.slice(Math.min(typedLen, word.length));
+
+    return (
+      <span
+        key={idx}
+        ref={activeWordRef}
+        dir="rtl"
+        className="relative inline-block ml-3.5 mb-2.5 font-rtl text-xl sm:text-2xl select-none text-right"
+      >
+        {/* Caret before any typing starts: positioned on the far RIGHT edge of the RTL word */}
+        {typedLen === 0 && isFocused && !isFailed && (
+          <span
+            className={`
+              absolute -right-1 top-[10%] bottom-[10%] w-[0.1875rem] rounded-full pointer-events-none z-20
+              ${theme.caret} ${!isActive ? 'animate-caret-blink' : ''}
+            `}
+          />
+        )}
+
+        {/* Matched Prefix (Correct Green) */}
+        {matchedPrefix.length > 0 && (
+          <span className={settings.difficulty === 'blind' ? theme.textNormal : theme.correct}>
+            {matchedPrefix}
+          </span>
+        )}
+
+        {/* Active Caret: Moves smoothly from right to left as characters are typed */}
+        {typedLen > 0 && typedLen <= word.length && isFocused && !isFailed && (
+          <span
+            className={`
+              inline-block w-[0.1875rem] h-[1.3em] align-middle -mx-[0.09375rem] rounded-full pointer-events-none z-20
+              ${theme.caret} ${!isActive ? 'animate-caret-blink' : ''}
+            `}
+          />
+        )}
+
+        {/* Mismatched error segment */}
+        {hasError && errorChars.length > 0 && (
+          <span className={`${theme.incorrect} underline decoration-rose-500`}>
+            {errorChars}
+          </span>
+        )}
+
+        {/* Extra typed letters beyond word length */}
+        {extraTyped.length > 0 && (
+          <span className={theme.extra}>
+            {extraTyped}
+          </span>
+        )}
+
+        {/* Caret when input length exceeds word length */}
+        {typedLen > word.length && isFocused && !isFailed && (
+          <span
+            className={`
+              inline-block w-[0.1875rem] h-[1.3em] align-middle -mx-[0.09375rem] rounded-full pointer-events-none z-20
+              ${theme.caret} ${!isActive ? 'animate-caret-blink' : ''}
+            `}
+          />
+        )}
+
+        {/* Remaining untyped target word letters */}
+        {untypedRemaining.length > 0 && (
+          <span className={theme.textMuted}>
+            {untypedRemaining}
+          </span>
+        )}
+      </span>
+    );
+  };
+
+  const renderLtrWord = (word: string, idx: number) => {
     const isCurrent = idx === wordIndex;
     const isPast = idx < wordIndex;
     const typedWord = isPast ? history[idx] : isCurrent ? inputVal : '';
@@ -488,29 +690,54 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
         </div>
       </div>
 
+      {/* Optional AI Ghost Racer Speedway Track */}
+      {settings.showGhostRacer && (
+        <GhostRacerTrack
+          playerProgress={
+            settings.mode === 'time'
+              ? (elapsedTime / Math.max(1, settings.timeDuration)) * 100
+              : settings.mode === 'words'
+              ? (wordIndex / Math.max(1, settings.wordCount)) * 100
+              : (wordIndex / Math.max(1, words.length)) * 100
+          }
+          ghostProgress={
+            settings.mode === 'time'
+              ? (elapsedTime / Math.max(1, settings.timeDuration)) * 100
+              : (elapsedTime / Math.max(1, ((settings.wordCount || words.length) * 5) / ((settings.ghostRacerSpeed || settings.targetWpm || 70) / 60))) * 100
+          }
+          playerWpm={liveWpm}
+          ghostWpm={settings.ghostRacerSpeed || settings.targetWpm || 70}
+          ghostLabel={settings.ghostRacerSpeed ? `${settings.ghostRacerSpeed} WPM AI` : 'Target Pace'}
+          isActive={isActive}
+        />
+      )}
+
       {/* Main Text Display & Focus Area */}
       <div
         onClick={() => inputRef.current?.focus()}
         className={`
-          relative w-full p-5 sm:p-6 rounded-2xl border transition-all duration-150 cursor-text
+          relative w-full p-4 sm:p-6 rounded-2xl border transition-all duration-150 cursor-text
           ${theme.border} ${theme.cardBg} shadow-sm overflow-hidden
           ${settings.fontSize === 'xl' ? 'text-xl sm:text-2xl' : settings.fontSize === 'lg' ? 'text-lg sm:text-xl' : 'text-base sm:text-lg'}
         `}
       >
-        {/* Hidden Input field capturing keystrokes */}
+        {/* Hidden Input field capturing keystrokes (touch-friendly on mobile) */}
         <input
           ref={inputRef}
           type="text"
+          dir={isRTL ? 'rtl' : 'ltr'}
+          lang={isRTL ? (settings.language === 'pashto' ? 'ps' : settings.language === 'dari' ? 'fa' : 'ar') : 'en'}
           value={inputVal}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          className="absolute inset-0 opacity-0 pointer-events-none"
+          className="absolute inset-0 w-full h-full opacity-0 cursor-text z-10"
           autoCapitalize="off"
           autoComplete="off"
           autoCorrect="off"
           spellCheck="false"
+          inputMode="text"
         />
 
         {/* Blurring overlay if user clicks away */}
@@ -518,7 +745,7 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
           <div className="absolute inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-30 transition-all rounded-2xl cursor-pointer">
             <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-semibold shadow-lg">
               <Sparkles className="w-4 h-4 text-cyan-400" />
-              <span>Click or press any key to focus</span>
+              <span>Tap or press any key to focus</span>
             </div>
           </div>
         )}
@@ -532,11 +759,15 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
             <h3 className="text-base font-bold text-white">Test Terminated</h3>
             <p className="text-xs text-rose-300 mt-0.5 max-w-sm">{failureReason}</p>
             <button
-              onClick={onRestartTest}
-              className="mt-3 flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold transition-all shadow-md"
+              type="button"
+              onClick={() => {
+                resetInternalState();
+                onRestartTest();
+              }}
+              className="mt-3 flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold transition-all shadow-md cursor-pointer active:scale-95"
             >
               <RotateCcw className="w-4 h-4" />
-              Retry Test (Tab + Enter)
+              Retry Test (Enter / Tab / Esc)
             </button>
           </div>
         )}
@@ -544,17 +775,63 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
         {/* Text Container with smooth 3-line viewport */}
         <div
           ref={containerRef}
-          className="relative max-h-[7.1875rem] sm:max-h-[8.125rem] overflow-hidden leading-relaxed tracking-wider select-none font-mono-code"
+          dir={isRTL ? 'rtl' : 'ltr'}
+          className={`relative ${
+            isRTL
+              ? 'max-h-[8.5rem] sm:max-h-[9.75rem] text-right font-rtl leading-loose'
+              : 'max-h-[7.1875rem] sm:max-h-[8.125rem] text-left font-mono-code leading-relaxed tracking-wider'
+          } overflow-hidden select-none`}
         >
           {/* Words */}
-          <div className="flex flex-wrap">
-            {words.map((word, idx) => renderWord(word, idx))}
+          <div className="flex flex-wrap" dir={isRTL ? 'rtl' : 'ltr'}>
+            {words.map((word, idx) => (isRTL ? renderRtlWord(word, idx) : renderLtrWord(word, idx)))}
           </div>
         </div>
       </div>
 
-      {/* Quick restart icon button */}
-      <div className="flex justify-center -mt-1">
+      {/* Mobile Touch Bar (visible on mobile phones for easy touch typing & control) */}
+      <div className="flex sm:hidden items-center gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            advanceWord();
+            inputRef.current?.focus();
+          }}
+          className="flex-1 py-2.5 rounded-xl bg-cyan-500/15 active:bg-cyan-500/30 border border-cyan-500/30 text-cyan-300 font-mono-code text-xs font-bold flex items-center justify-center gap-1 min-h-[44px]"
+        >
+          <span>␣ Space (Next)</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            handleBackspace();
+            inputRef.current?.focus();
+          }}
+          className="px-4 py-2.5 rounded-xl bg-white/5 active:bg-white/15 border border-white/10 text-neutral-300 text-xs font-semibold min-h-[44px]"
+          title="Backspace"
+        >
+          ⌫
+        </button>
+        <button
+          type="button"
+          onClick={() => inputRef.current?.focus()}
+          className="px-3.5 py-2.5 rounded-xl bg-white/5 active:bg-white/15 border border-white/10 text-neutral-300 text-xs min-h-[44px]"
+          title="Focus Keyboard"
+        >
+          <KeyboardIcon className="w-4 h-4 text-cyan-400" />
+        </button>
+        <button
+          type="button"
+          onClick={onRestartTest}
+          className="px-3.5 py-2.5 rounded-xl bg-white/5 active:bg-white/15 border border-white/10 text-neutral-300 text-xs min-h-[44px]"
+          title="Restart Test"
+        >
+          <RotateCcw className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Desktop Quick restart icon button */}
+      <div className="hidden sm:flex justify-center -mt-1">
         <button
           onClick={onRestartTest}
           className="flex items-center gap-1.5 px-3 py-1 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-neutral-200 text-xs font-medium transition-colors"

@@ -25,13 +25,13 @@ import {
 import { TestResult } from './types';
 
 export const firebaseConfig = {
-  apiKey: "AIzaSyDkatf0x9ELI7IwpezttDONMmJDTzEiuNo",
-  authDomain: "typing-test-by-maher.firebaseapp.com",
-  projectId: "typing-test-by-maher",
-  storageBucket: "typing-test-by-maher.firebasestorage.app",
-  messagingSenderId: "977851930372",
-  appId: "1:977851930372:web:7dd36303f9fd8b0b4c2251",
-  measurementId: "G-0D4HF5SW8W"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDkatf0x9ELI7IwpezttDONMmJDTzEiuNo",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "typing-test-by-maher.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "typing-test-by-maher",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "typing-test-by-maher.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "977851930372",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:977851930372:web:7dd36303f9fd8b0b4c2251",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-0D4HF5SW8W"
 };
 
 // Initialize Firebase App safely (singleton)

@@ -171,3 +171,200 @@ export function playFinishFanfare() {
     osc.stop(startTime + 0.35);
   });
 }
+
+/**
+ * Procedural Laser Shot sound for Arcade mode
+ */
+export function playLaserSound(volume = 0.5) {
+  if (volume <= 0) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(980, now);
+  osc.frequency.exponentialRampToValueAtTime(160, now + 0.08);
+
+  gain.gain.setValueAtTime(volume * 0.3, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(now);
+  osc.stop(now + 0.08);
+}
+
+/**
+ * Procedural Arcade Explosion sound when a word is destroyed
+ */
+export function playExplosionSound(volume = 0.5) {
+  if (volume <= 0) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  osc.type = 'square';
+  osc.frequency.setValueAtTime(120, now);
+  osc.frequency.exponentialRampToValueAtTime(30, now + 0.18);
+
+  gain.gain.setValueAtTime(volume * 0.45, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(now);
+  osc.stop(now + 0.2);
+}
+
+/**
+ * Ascending pitch combo chime for hitting word streaks
+ */
+export function playComboSound(streak = 1, volume = 0.5) {
+  if (volume <= 0) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  const baseFreq = 440;
+  const step = Math.min(12, streak);
+  const freq = baseFreq * Math.pow(2, step / 12);
+
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(freq, now);
+  osc.frequency.linearRampToValueAtTime(freq * 1.2, now + 0.12);
+
+  gain.gain.setValueAtTime(volume * 0.25, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(now);
+  osc.stop(now + 0.15);
+}
+
+/**
+ * Sound when a shield / life is lost
+ */
+export function playShieldLostSound(volume = 0.5) {
+  if (volume <= 0) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(240, now);
+  osc.frequency.exponentialRampToValueAtTime(60, now + 0.25);
+
+  gain.gain.setValueAtTime(volume * 0.4, now);
+  gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(now);
+  osc.stop(now + 0.26);
+}
+
+/**
+ * Sound when a power-up (Freeze, EMP, Heal) is activated
+ */
+export function playPowerUpSound(volume = 0.5) {
+  if (volume <= 0) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  const now = ctx.currentTime;
+  [587.33, 739.99, 880, 1174.66].forEach((freq, idx) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const start = now + idx * 0.05;
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, start);
+
+    gain.gain.setValueAtTime(volume * 0.25, start);
+    gain.gain.exponentialRampToValueAtTime(0.001, start + 0.18);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(start);
+    osc.stop(start + 0.2);
+  });
+}
+
+/**
+ * Majestic Crystalline Freeze sound: descending glass chime harmonics with shimmer
+ */
+export function playFreezeSound(volume = 0.5) {
+  if (volume <= 0) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  const now = ctx.currentTime;
+  const freqs = [1760, 1318.5, 987.77, 880, 659.25];
+  freqs.forEach((freq, idx) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const start = now + idx * 0.04;
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, start);
+    osc.frequency.exponentialRampToValueAtTime(freq * 0.85, start + 0.35);
+
+    gain.gain.setValueAtTime(volume * 0.22, start);
+    gain.gain.exponentialRampToValueAtTime(0.001, start + 0.38);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(start);
+    osc.stop(start + 0.4);
+  });
+}
+
+/**
+ * Thunderous EMP / Nuke sound: heavy sub-bass seismic discharge with high-voltage electric crackle
+ */
+export function playEmpSound(volume = 0.5) {
+  if (volume <= 0) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  const now = ctx.currentTime;
+
+  // 1. Sub-bass shockwave impact
+  const subOsc = ctx.createOscillator();
+  const subGain = ctx.createGain();
+  subOsc.type = 'sine';
+  subOsc.frequency.setValueAtTime(140, now);
+  subOsc.frequency.exponentialRampToValueAtTime(28, now + 0.45);
+  subGain.gain.setValueAtTime(volume * 0.6, now);
+  subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+  subOsc.connect(subGain);
+  subGain.connect(ctx.destination);
+  subOsc.start(now);
+  subOsc.stop(now + 0.5);
+
+  // 2. High voltage electric zap & discharge
+  const zapOsc = ctx.createOscillator();
+  const zapGain = ctx.createGain();
+  zapOsc.type = 'sawtooth';
+  zapOsc.frequency.setValueAtTime(1400, now);
+  zapOsc.frequency.exponentialRampToValueAtTime(80, now + 0.3);
+  zapGain.gain.setValueAtTime(volume * 0.4, now);
+  zapGain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+  zapOsc.connect(zapGain);
+  zapGain.connect(ctx.destination);
+  zapOsc.start(now);
+  zapOsc.stop(now + 0.32);
+}
