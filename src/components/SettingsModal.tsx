@@ -257,6 +257,52 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </label>
             </div>
           </div>
+
+          <div className="w-full h-[0.0625rem] bg-white/5" />
+
+          {/* Section: AI Ghost Racer Speedway */}
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2 font-semibold text-white text-sm">
+              <Sparkles className="w-4 h-4 text-cyan-400" />
+              <span>AI Ghost Racer Duel</span>
+            </div>
+            <p className="text-neutral-400 text-xs">
+              Race in real-time alongside an AI ghost pacer on a cyberpunk speedway track:
+            </p>
+
+            <label className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5 cursor-pointer">
+              <div>
+                <div className="text-neutral-200 font-medium">Enable Ghost Racer Track</div>
+                <div className="text-[0.6875rem] text-neutral-400 mt-0.5">Displays animated dual-lane race track above words</div>
+              </div>
+              <input
+                type="checkbox"
+                checked={settings.showGhostRacer || false}
+                onChange={(e) => onUpdateSettings({ showGhostRacer: e.target.checked })}
+                className="w-4 h-4 accent-cyan-500 rounded"
+              />
+            </label>
+
+            {settings.showGhostRacer && (
+              <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                <div>
+                  <div className="text-neutral-200 font-medium">AI Ghost Target Pace</div>
+                  <div className="text-[0.6875rem] text-neutral-400 mt-0.5">Speed that the ghost racer drives at</div>
+                </div>
+                <select
+                  value={settings.ghostRacerSpeed || 70}
+                  onChange={(e) => onUpdateSettings({ ghostRacerSpeed: parseInt(e.target.value, 10) })}
+                  className="bg-neutral-900 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-neutral-200 focus:outline-none"
+                >
+                  <option value={40}>40 WPM (Rookie)</option>
+                  <option value={60}>60 WPM (Intermediate)</option>
+                  <option value={80}>80 WPM (Advanced)</option>
+                  <option value={100}>100 WPM (Master)</option>
+                  <option value={120}>120 WPM (Esports)</option>
+                </select>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Footer */}

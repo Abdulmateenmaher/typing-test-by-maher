@@ -1,4 +1,4 @@
-export type TestMode = 'time' | 'words' | 'quote' | 'code' | 'drill';
+export type TestMode = 'time' | 'words' | 'quote' | 'code' | 'drill' | 'arcade';
 
 export type TimeDuration = 15 | 30 | 60 | 120;
 export type WordCount = 10 | 25 | 50 | 100;
@@ -23,8 +23,23 @@ export type ThemeId =
   | 'dracula'
   | 'serene-light';
 
+export type SupportedLanguage =
+  | 'english'
+  | 'pashto'
+  | 'dari'
+  | 'arabic'
+  | 'urdu'
+  | 'spanish'
+  | 'french'
+  | 'german'
+  | 'italian'
+  | 'turkish'
+  | 'russian'
+  | 'hindi';
+
 export interface TestSettings {
   mode: TestMode;
+  language: SupportedLanguage;
   timeDuration: TimeDuration;
   wordCount: WordCount;
   quoteLength: QuoteLength;
@@ -46,6 +61,9 @@ export interface TestSettings {
   showLiveAccuracy: boolean;
   paceCaret: boolean;
   targetWpm: number;
+  showGhostRacer?: boolean;
+  ghostRacerSpeed?: number;
+  mobileKeyboardMode?: 'auto' | 'native' | 'touch';
 }
 
 export interface SecondMetric {

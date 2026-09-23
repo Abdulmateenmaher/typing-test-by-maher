@@ -33,9 +33,11 @@ import { SettingsModal } from './components/SettingsModal';
 import { DrillsModal } from './components/DrillsModal';
 import { AuthModal } from './components/AuthModal';
 import { LeaderboardModal } from './components/LeaderboardModal';
+import { ArcadeGame } from './components/ArcadeGame';
 
 const DEFAULT_SETTINGS: TestSettings = {
   mode: 'time',
+  language: 'english',
   timeDuration: 30,
   wordCount: 25,
   quoteLength: 'medium',
@@ -56,7 +58,9 @@ const DEFAULT_SETTINGS: TestSettings = {
   showLiveWpm: true,
   showLiveAccuracy: true,
   paceCaret: false,
-  targetWpm: 75
+  targetWpm: 75,
+  showGhostRacer: false,
+  ghostRacerSpeed: 70
 };
 
 export default function App() {
@@ -99,6 +103,7 @@ export default function App() {
 
   // Active Words & Typing Engine State
   const [words, setWords] = useState<string[]>([]);
+  const [testSessionId, setTestSessionId] = useState(0);
   const [currentKey, setCurrentKey] = useState<string>('');
   const [pressedKey, setPressedKey] = useState<string>('');
   const [lastResult, setLastResult] = useState<TestResult | null>(null);
@@ -183,11 +188,11 @@ export default function App() {
 
       if (cfg.mode === 'time') {
         const count = cfg.timeDuration * 3.5;
-        return generateWordSequence(Math.round(count), cfg.vocabulary, cfg.includePunctuation, cfg.includeNumbers);
+        return generateWordSequence(Math.round(count), cfg.vocabulary, cfg.includePunctuation, cfg.includeNumbers, cfg.language || 'english');
       }
 
       if (cfg.mode === 'words') {
-        return generateWordSequence(cfg.wordCount, cfg.vocabulary, cfg.includePunctuation, cfg.includeNumbers);
+        return generateWordSequence(cfg.wordCount, cfg.vocabulary, cfg.includePunctuation, cfg.includeNumbers, cfg.language || 'english');
       }
 
       if (cfg.mode === 'quote') {
@@ -206,9 +211,19 @@ export default function App() {
         return snippet.code.split(/\s+/);
       }
 
-      return generateWordSequence(30, cfg.vocabulary, cfg.includePunctuation, cfg.includeNumbers);
+      return generateWordSequence(30, cfg.vocabulary, cfg.includePunctuation, cfg.includeNumbers, cfg.language || 'english');
     },
-    [settings]
+    [
+      settings.mode,
+      settings.language,
+      settings.timeDuration,
+      settings.wordCount,
+      settings.quoteLength,
+      settings.codeLanguage,
+      settings.includePunctuation,
+      settings.includeNumbers,
+      settings.vocabulary
+    ]
   );
 
   // Initialize words on mount or when mode/settings change
@@ -220,6 +235,7 @@ export default function App() {
     }
   }, [
     settings.mode,
+    settings.language,
     settings.timeDuration,
     settings.wordCount,
     settings.quoteLength,
@@ -233,6 +249,7 @@ export default function App() {
   // Restart current test
   const handleRestart = () => {
     setCloudSynced(false);
+    setTestSessionId((id) => id + 1);
     if (settings.mode === 'drill' && words.length > 0) {
       setLastResult(null);
     } else {
@@ -320,6 +337,64 @@ export default function App() {
     setIsHistoryOpen(false);
   };
 
+  // Save Arcade Mode High Score & Category WPM
+  const handleSaveArcadeScore = useCallback(
+    async (score: number, wave: number, accuracy: number, wpm: number, category: 'normal' | 'fast' | 'hyper' = 'normal') => {
+      const catLabel = category.toUpperCase();
+      const arcadeResult: TestResult = {
+        id: `arcade-${Date.now()}`,
+        date: new Date().toISOString(),
+        wpm: Math.max(10, wpm),
+        rawWpm: Math.max(10, wpm),
+        accuracy,
+        consistency: 95,
+        correctChars: Math.round(wpm * 5),
+        incorrectChars: 0,
+        extraChars: 0,
+        missedChars: 0,
+        totalChars: Math.round(wpm * 5),
+        duration: 60,
+        mode: 'arcade',
+        modeDetail: `Arcade (${catLabel}) • Wave ${wave} • ${score.toLocaleString()} pts`,
+        difficulty: settings.difficulty,
+        timeline: [],
+        keyStats: {},
+        mistypedWords: []
+      };
+
+      setHistory((prevHistory) => {
+        const updatedHistory = [arcadeResult, ...prevHistory];
+        if (user) {
+          saveTestToCloud(user.uid, arcadeResult)
+            .then(() => syncUserLeaderboard(user, updatedHistory))
+            .then(() => setCloudSynced(true))
+            .catch((err) => console.error('Failed to sync arcade score to cloud:', err));
+        }
+        return updatedHistory;
+      });
+    },
+    [settings.difficulty, user]
+  );
+
+  // Virtual Keyboard Touch Click Handler for Mobile
+  const handleVirtualKeyClick = (key: string) => {
+    const inputEl = document.querySelector('input[type="text"]') as HTMLInputElement | null;
+    if (!inputEl) return;
+    inputEl.focus();
+
+    if (key === 'Backspace') {
+      const ev = new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true });
+      inputEl.dispatchEvent(ev);
+    } else if (key === 'Enter') {
+      const ev = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true });
+      inputEl.dispatchEvent(ev);
+    } else {
+      const char = key === ' ' ? ' ' : key;
+      const ev = new KeyboardEvent('keydown', { key: char, bubbles: true });
+      inputEl.dispatchEvent(ev);
+    }
+  };
+
   const currentTheme = THEMES[settings.theme] || THEMES['maher-obsidian'];
 
   return (
@@ -341,7 +416,7 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 py-2 sm:py-3 flex flex-col justify-center gap-3 sm:gap-3.5">
+      <main className="flex-1 w-full max-w-5xl mx-auto px-3 sm:px-6 py-2 sm:py-3 flex flex-col justify-center gap-3 sm:gap-3.5">
         {/* Active Custom Drill Notification Banner */}
         {settings.mode === 'drill' && activeDrillTitle && !lastResult && (
           <div className="w-full max-w-4xl mx-auto flex items-center justify-between p-2.5 px-3.5 rounded-xl border border-purple-500/30 bg-purple-500/10 text-xs text-purple-200">
@@ -358,8 +433,8 @@ export default function App() {
           </div>
         )}
 
-        {/* Mode Selector Toolbar (only visible during test mode) */}
-        {!lastResult && (
+        {/* Mode Selector Toolbar (visible when not playing Arcade or showing Results) */}
+        {!lastResult && settings.mode !== 'arcade' && (
           <ModeSelector
             settings={settings}
             theme={currentTheme}
@@ -368,8 +443,17 @@ export default function App() {
           />
         )}
 
-        {/* View Switch: Active Typing Test OR Post-Test Results Dashboard */}
-        {lastResult ? (
+        {/* View Switch: Arcade Rush Mode vs Classic Test vs Results View */}
+        {settings.mode === 'arcade' ? (
+          <ArcadeGame
+            theme={currentTheme}
+            sound={settings.sound}
+            soundVolume={settings.soundVolume}
+            language={settings.language}
+            onExit={() => setSettings((prev) => ({ ...prev, mode: 'time' }))}
+            onSaveScore={handleSaveArcadeScore}
+          />
+        ) : lastResult ? (
           <ResultsView
             result={lastResult}
             theme={currentTheme}
@@ -381,6 +465,7 @@ export default function App() {
           />
         ) : (
           <TypingArea
+            key={testSessionId}
             words={words}
             settings={settings}
             theme={currentTheme}
@@ -391,13 +476,15 @@ export default function App() {
           />
         )}
 
-        {/* Interactive Virtual Keyboard (if enabled & not on results screen) */}
-        {!lastResult && settings.showVirtualKeyboard && (
+        {/* Interactive Virtual Keyboard (if enabled & not on results screen & not in arcade mode) */}
+        {!lastResult && settings.mode !== 'arcade' && settings.showVirtualKeyboard && (
           <VirtualKeyboard
             currentKey={currentKey}
             theme={currentTheme}
             showFingerGuide={settings.showFingerGuide}
             pressedKey={pressedKey}
+            language={settings.language}
+            onKeyClick={handleVirtualKeyClick}
           />
         )}
       </main>

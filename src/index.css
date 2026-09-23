@@ -10,6 +10,12 @@
   font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
+.font-rtl {
+  font-family: 'Noto Sans Arabic', 'Amiri', 'Segoe UI', Tahoma, Arial, sans-serif;
+  font-feature-settings: "cv01" on, "cv02" on, "liga" on, "calt" on;
+  letter-spacing: normal !important;
+}
+
 @keyframes cursorBlink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }

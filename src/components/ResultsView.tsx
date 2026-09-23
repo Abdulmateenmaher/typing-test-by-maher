@@ -233,9 +233,9 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
       </div>
 
       {/* Interactive Visualizations: Timeline Chart or Keyboard Heatmap */}
-      <div className={`p-5 rounded-2xl border ${theme.border} ${theme.cardBg} flex flex-col gap-4 shadow-sm`}>
-        <div className="flex items-center justify-between border-b border-white/10 pb-3">
-          <div className="flex items-center gap-3">
+      <div className={`p-4 sm:p-5 rounded-2xl border ${theme.border} ${theme.cardBg} flex flex-col gap-4 shadow-sm`}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/10 pb-3 gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             <button
               onClick={() => setActiveTab('chart')}
               className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
@@ -244,7 +244,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                   : 'text-neutral-400 hover:text-neutral-200'
               }`}
             >
-              Timeline Graph (Speed & Errors)
+              Timeline Graph
             </button>
             <button
               onClick={() => setActiveTab('heatmap')}
@@ -254,22 +254,22 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                   : 'text-neutral-400 hover:text-neutral-200'
               }`}
             >
-              Key Accuracy Heatmap ({Object.keys(result.keyStats).length} keys)
+              Key Heatmap ({Object.keys(result.keyStats).length} keys)
             </button>
           </div>
 
-          <div className="flex items-center gap-4 text-xs text-neutral-400">
+          <div className="flex items-center gap-3 text-xs text-neutral-400">
             {activeTab === 'chart' && (
               <>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1">
                   <span className="w-3 h-0.5 bg-cyan-400 inline-block" />
                   <span>WPM</span>
                 </div>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1">
                   <span className="w-3 h-0.5 bg-neutral-500 inline-block" />
                   <span>Raw</span>
                 </div>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1">
                   <span className="w-2 h-2 rounded-full bg-rose-500 inline-block" />
                   <span>Mistake</span>
                 </div>
@@ -279,8 +279,8 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         </div>
 
         {activeTab === 'chart' ? (
-          <div className="w-full overflow-x-auto">
-            <div className="min-w-[37.5rem] h-[13.75rem] relative">
+          <div className="w-full overflow-x-auto no-scrollbar">
+            <div className="w-full min-w-[20rem] sm:min-w-[37.5rem] h-[12rem] sm:h-[13.75rem] relative">
               <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full h-full overflow-visible">
                 {/* Horizontal reference grid lines */}
                 {[0, 0.25, 0.5, 0.75, 1].map((pct, idx) => {

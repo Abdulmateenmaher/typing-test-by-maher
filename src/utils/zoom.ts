@@ -49,6 +49,11 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
 export const computeFitScale = (viewportWidth: number, viewportHeight: number): number => {
   if (!viewportWidth || !viewportHeight) return MIN_ZOOM_SCALE;
 
+  // On compact mobile screens, dynamically fit comfortably without overflowing
+  if (viewportWidth < 640) {
+    return clamp(viewportWidth / 400, 0.88, 1.0);
+  }
+
   const widthFit = (viewportWidth - WINDOW_GUTTER) / BASE_CONTENT_WIDTH;
   const heightFit = (viewportHeight * VERTICAL_FILL_RATIO) / BASE_CONTENT_HEIGHT;
 

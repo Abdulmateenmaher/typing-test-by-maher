@@ -1,4 +1,117 @@
-import { CodeLanguage, CodeSnippet, QuoteItem } from '../types';
+import { CodeLanguage, CodeSnippet, QuoteItem, SupportedLanguage } from '../types';
+
+export interface LanguageMeta {
+  id: SupportedLanguage;
+  name: string;
+  nativeName: string;
+  dir: 'ltr' | 'rtl';
+  flag: string;
+}
+
+export const SUPPORTED_LANGUAGES: LanguageMeta[] = [
+  { id: 'english', name: 'English', nativeName: 'English', dir: 'ltr', flag: '🇬🇧' },
+  { id: 'pashto', name: 'Pashto', nativeName: 'پښتو', dir: 'rtl', flag: '🇦🇫' },
+  { id: 'dari', name: 'Dari / Persian', nativeName: 'دری', dir: 'rtl', flag: '🇦🇫' },
+  { id: 'arabic', name: 'Arabic', nativeName: 'العربية', dir: 'rtl', flag: '🇸🇦' },
+  { id: 'urdu', name: 'Urdu', nativeName: 'اردو', dir: 'rtl', flag: '🇵🇰' },
+  { id: 'spanish', name: 'Spanish', nativeName: 'Español', dir: 'ltr', flag: '🇪🇸' },
+  { id: 'french', name: 'French', nativeName: 'Français', dir: 'ltr', flag: '🇫🇷' },
+  { id: 'german', name: 'German', nativeName: 'Deutsch', dir: 'ltr', flag: '🇩🇪' },
+  { id: 'italian', name: 'Italian', nativeName: 'Italiano', dir: 'ltr', flag: '🇮🇹' },
+  { id: 'turkish', name: 'Turkish', nativeName: 'Türkçe', dir: 'ltr', flag: '🇹🇷' },
+  { id: 'russian', name: 'Russian', nativeName: 'Русский', dir: 'ltr', flag: '🇷🇺' },
+  { id: 'hindi', name: 'Hindi', nativeName: 'हिन्दी', dir: 'ltr', flag: '🇮🇳' }
+];
+
+export const PASHTO_WORDS = [
+  'سلام', 'مننه', 'ښه', 'کور', 'هېواد', 'ملګری', 'ژوند', 'مینه', 'کتاب', 'ښوونځی',
+  'کار', 'لار', 'لمر', 'باران', 'علم', 'هڅه', 'بریالیتوب', 'سوله', 'افغان', 'رڼا',
+  'ښکلی', 'ورور', 'خور', 'مور', 'پلار', 'خوښي', 'هیله', 'زړه', 'ستوری', 'اسمان',
+  'ځمکه', 'اوبه', 'غر', 'باغ', 'ګل', 'ښار', 'کلي', 'خلک', 'پوهه', 'قلم',
+  'سبا', 'نن', 'وخت', 'صداقت', 'احترام', 'بریالی', 'هدف', 'روښانه', 'آزادي', 'ولس',
+  'ځوان', 'تکل', 'نړۍ', 'قدرت', 'پسرلی', 'شعر', 'هنر', 'درناوی', 'صبر', 'همت'
+];
+
+export const DARI_WORDS = [
+  'سلام', 'تشکر', 'دوست', 'مهربان', 'زندگی', 'وطن', 'کتاب', 'بهار', 'خورشید', 'باران',
+  'دانش', 'کار', 'تلاش', 'پیروزی', 'صلح', 'روشنایی', 'زیبا', 'دریا', 'ستاره', 'آسمان',
+  'مادر', 'پدر', 'امید', 'دل', 'گل', 'شهر', 'مردم', 'زمان', 'قلم', 'امروز',
+  'فردا', 'خوشبختی', 'آزادی', 'محبت', 'آرامش', 'لبخند', 'رویا', 'جهان', 'آفتاب', 'همدلی',
+  'آینده', 'پیمان', 'شادی', 'نیکی', 'فرهنگ', 'صداقت', 'اندیشه', 'یار', 'نور', 'روشنی',
+  'وفا', 'هنر', 'همبستگی', 'آوا', 'کوشش', 'سرسبز', 'شوق', 'صفا', 'پرواز', 'صمیمیت'
+];
+
+export const ARABIC_WORDS = [
+  'سلام', 'شكرا', 'مرحبا', 'أمل', 'نجاح', 'كتاب', 'علم', 'عمل', 'شمس', 'قمر',
+  'حياة', 'سماء', 'بحر', 'نور', 'عالم', 'مدينة', 'إنسان', 'فكرة', 'هدف', 'إبداع',
+  'صديق', 'محبة', 'قلب', 'زهرة', 'وطن', 'خير', 'سعادة', 'قوة', 'مستقبل', 'صبر',
+  'سلامة', 'طريق', 'حلم', 'حكمة', 'جمال', 'كلمة', 'فرح', 'صدق', 'همة', 'وفاء',
+  'ثقة', 'نصر', 'نجم', 'أرض', 'ماء', 'شجاعة', 'كرامة', 'طيبة', 'ريادة', 'تطور'
+];
+
+export const URDU_WORDS = [
+  'سلام', 'شکریہ', 'دوست', 'زندگی', 'کتاب', 'محنت', 'کامیابی', 'روشنی', 'سورج', 'چاند',
+  'وطن', 'محبت', 'علم', 'خواب', 'سفر', 'خوبصورت', 'وقت', 'دنیا', 'انسان', 'سکون',
+  'امید', 'دل', 'پھول', 'شہر', 'لوگ', 'آسمان', 'زمین', 'پانی', 'قلم', 'آج',
+  'کل', 'خوشی', 'آزادی', 'پیار', 'مسکراہٹ', 'ستارہ', 'بہار', 'منزل', 'ہمت', 'سچائی',
+  'شرافت', 'خوشبو', 'احساس', 'قدرت', 'ترقی', 'ہمسفر', 'یاد', 'جذبہ', 'روشنی', 'شوق'
+];
+
+export const SPANISH_WORDS = [
+  'tiempo', 'vida', 'mundo', 'casa', 'trabajo', 'amigo', 'libro', 'fuerza', 'nuevo', 'camino',
+  'saber', 'cielo', 'sol', 'agua', 'noche', 'pueblo', 'palabra', 'amor', 'verdad', 'siempre',
+  'viaje', 'luz', 'tierra', 'familia', 'sueno', 'futuro', 'mente', 'alma', 'corazon', 'estrella',
+  'esperanza', 'libertad', 'alegria', 'fuego', 'paz', 'exito', 'destino', 'pasion', 'historia', 'memoria',
+  'mar', 'viento', 'silencio', 'claridad', 'valor', 'bosque', 'sonrisa', 'energia', 'campeon', 'sabiduria'
+];
+
+export const FRENCH_WORDS = [
+  'temps', 'monde', 'vie', 'travail', 'ami', 'livre', 'maison', 'nouveau', 'force', 'savoir',
+  'ciel', 'soleil', 'eau', 'nuit', 'ville', 'mot', 'amour', 'verite', 'toujours', 'esprit',
+  'voyage', 'lumiere', 'terre', 'famille', 'reve', 'futur', 'coeur', 'etoile', 'espoir', 'liberte',
+  'joie', 'paix', 'succes', 'destin', 'passion', 'histoire', 'memoire', 'mer', 'vent', 'silence',
+  'courage', 'bonheur', 'harmonie', 'energie', 'horizon', 'plume', 'nature', 'sourire', 'pensée', 'creativite'
+];
+
+export const GERMAN_WORDS = [
+  'zeit', 'leben', 'welt', 'arbeit', 'freund', 'buch', 'haus', 'kraft', 'wissen', 'himmel',
+  'sonne', 'wasser', 'nacht', 'stadt', 'wort', 'liebe', 'wahrheit', 'immer', 'reise', 'freiheit',
+  'licht', 'erde', 'familie', 'traum', 'zukunft', 'herz', 'stern', 'hoffnung', 'freude', 'frieden',
+  'erfolg', 'schicksal', 'leidenschaft', 'geschichte', 'mut', 'gluck', 'klarheit', 'energie', 'harmonie', 'gedanke',
+  'natur', 'weisheit', 'stille', 'vertrauen', 'blick', 'wege', 'sommer', 'blume', 'klang', 'bruecke'
+];
+
+export const ITALIAN_WORDS = [
+  'tempo', 'vita', 'mondo', 'lavoro', 'amico', 'libro', 'casa', 'forza', 'sapere', 'cielo',
+  'sole', 'acqua', 'notte', 'citta', 'parola', 'amore', 'verita', 'sempre', 'viaggio', 'bellezza',
+  'luce', 'terra', 'famiglia', 'sogno', 'futuro', 'cuore', 'stella', 'speranza', 'liberta', 'gioia',
+  'pace', 'successo', 'destino', 'passione', 'storia', 'memoria', 'mare', 'vento', 'silenzio', 'coraggio',
+  'felicita', 'armonia', 'energia', 'canzone', 'orizzonte', 'pensiero', 'natura', 'sorriso', 'fede', 'creazione'
+];
+
+export const TURKISH_WORDS = [
+  'zaman', 'hayat', 'dunya', 'calisma', 'dost', 'kitap', 'ev', 'guc', 'bilgi', 'gokyuzu',
+  'gunes', 'su', 'gece', 'sehir', 'kelime', 'sevgi', 'dogru', 'daima', 'yolculuk', 'ozgurluk',
+  'isik', 'toprak', 'aile', 'ruya', 'gelecek', 'kalp', 'yildiz', 'umut', 'baris', 'basari',
+  'kader', 'tutku', 'tarih', 'deniz', 'ruzgar', 'sessizlik', 'cesaret', 'mutluluk', 'denge', 'guven',
+  'dogus', 'bahar', 'cicek', 'sevincli', 'yagmur', 'aydinlik', 'sabir', 'vuslat', 'dusunce', 'yurek'
+];
+
+export const RUSSIAN_WORDS = [
+  'время', 'жизнь', 'мир', 'работа', 'друг', 'книга', 'дом', 'сила', 'знание', 'небо',
+  'солнце', 'вода', 'ночь', 'город', 'слово', 'любовь', 'правда', 'всегда', 'путь', 'свобода',
+  'свет', 'земля', 'семья', 'мечта', 'будущее', 'сердце', 'звезда', 'надежда', 'радость', 'успех',
+  'судьба', 'страсть', 'история', 'память', 'море', 'ветер', 'тишина', 'мужество', 'счастье', 'покой',
+  'мысль', 'улыбка', 'природа', 'песня', 'горизонт', 'огонь', 'весна', 'цветок', 'верность', 'добро'
+];
+
+export const HINDI_WORDS = [
+  'समय', 'जीवन', 'दुनिया', 'काम', 'मित्र', 'पुस्तक', 'घर', 'शक्ति', 'ज्ञान', 'आकाश',
+  'सूर्य', 'जल', 'रात', 'शहर', 'शब्द', 'प्रेम', 'सत्य', 'सदैव', 'यात्रा', 'शांति',
+  'प्रकाश', 'धरती', 'परिवार', 'सपना', 'भविष्य', 'हृदय', 'तारा', 'आशा', 'आनंद', 'सफलता',
+  'भाग्य', 'उमंग', 'इतिहास', 'स्मृति', 'सागर', 'हवा', 'मौन', 'साहस', 'सुख', 'विश्वास',
+  'विचार', 'मुस्कान', 'प्रकृति', 'गीत', 'दिशा', 'अग्नि', 'वसंत', 'फूल', 'निष्ठा', 'कल्याण'
+];
 
 export const ENGLISH_200 = [
   'the', 'be', 'of', 'and', 'a', 'to', 'in', 'he', 'have', 'it', 'that', 'for', 'they', 'I', 'with', 'as', 'not', 'on', 'she', 'at', 'by', 'this', 'we', 'you', 'do', 'but', 'his', 'from', 'they', 'say', 'her', 'she', 'or', 'an', 'will', 'my', 'one', 'all', 'would', 'there', 'their', 'what', 'so', 'up', 'out', 'if', 'about', 'who', 'get', 'which', 'go', 'me', 'when', 'make', 'can', 'like', 'time', 'no', 'just', 'him', 'know', 'take', 'people', 'into', 'year', 'your', 'good', 'some', 'could', 'them', 'see', 'other', 'than', 'then', 'now', 'look', 'only', 'come', 'its', 'over', 'think', 'also', 'back', 'after', 'use', 'two', 'how', 'our', 'work', 'first', 'well', 'way', 'even', 'new', 'want', 'because', 'any', 'these', 'give', 'day', 'most', 'us', 'great', 'between', 'need', 'large', 'under', 'water', 'around', 'every', 'place', 'such', 'world', 'here', 'take', 'why', 'help', 'put', 'different', 'away', 'again', 'off', 'went', 'old', 'number', 'great', 'tell', 'men', 'say', 'small', 'every', 'found', 'still', 'between', 'name', 'should', 'home', 'big', 'give', 'air', 'line', 'set', 'own', 'under', 'read', 'last', 'never', 'us', 'left', 'end', 'along', 'while', 'might', 'next', 'sound', 'below', 'saw', 'something', 'thought', 'both', 'few', 'those', 'always', 'show', 'large', 'often', 'together', 'asked', 'house', 'world', 'going', 'want', 'school', 'important', 'until', 'form', 'food', 'keep', 'children', 'feet', 'land', 'side', 'without', 'boy', 'once', 'animal', 'life', 'enough', 'took', 'four', 'head', 'above', 'kind', 'began', 'almost', 'live', 'page', 'got', 'earth', 'need', 'far', 'hand', 'high', 'year', 'mother', 'light', 'country', 'father', 'let', 'night', 'picture', 'being', 'study', 'second', 'soon', 'story', 'since', 'white', 'ever', 'paper', 'hard', 'near', 'sentence', 'better', 'best', 'across', 'during', 'today', 'however', 'sure', 'knew', 'it'
@@ -152,23 +265,65 @@ export const SPECIAL_DRILLS: Record<string, { title: string; words: string[] }> 
 };
 
 /**
- * Generate randomized word sequence based on vocabulary and count
+ * Helper to determine if a language is Right-to-Left (Pashto, Dari, Arabic, Urdu)
+ */
+export function isRtlLanguage(language: SupportedLanguage): boolean {
+  return language === 'pashto' || language === 'dari' || language === 'arabic' || language === 'urdu';
+}
+
+/**
+ * Get word bank pool for a specific language
+ */
+export function getWordsForLanguage(language: SupportedLanguage, vocabulary: 'english-200' | 'english-1k' | 'english-5k' = 'english-200'): string[] {
+  switch (language) {
+    case 'pashto':
+      return PASHTO_WORDS;
+    case 'dari':
+      return DARI_WORDS;
+    case 'arabic':
+      return ARABIC_WORDS;
+    case 'urdu':
+      return URDU_WORDS;
+    case 'spanish':
+      return SPANISH_WORDS;
+    case 'french':
+      return FRENCH_WORDS;
+    case 'german':
+      return GERMAN_WORDS;
+    case 'italian':
+      return ITALIAN_WORDS;
+    case 'turkish':
+      return TURKISH_WORDS;
+    case 'russian':
+      return RUSSIAN_WORDS;
+    case 'hindi':
+      return HINDI_WORDS;
+    case 'english':
+    default:
+      if (vocabulary === 'english-1k') {
+        return [...ENGLISH_200, ...ENGLISH_1000_EXTRA];
+      } else if (vocabulary === 'english-5k') {
+        return [...ENGLISH_200, ...ENGLISH_1000_EXTRA, ...ENGLISH_5000_EXTRA];
+      }
+      return [...ENGLISH_200];
+  }
+}
+
+/**
+ * Generate randomized word sequence based on language, vocabulary and count
  */
 export function generateWordSequence(
   count: number,
-  vocabulary: 'english-200' | 'english-1k' | 'english-5k',
-  includePunctuation: boolean,
-  includeNumbers: boolean
+  vocabulary: 'english-200' | 'english-1k' | 'english-5k' = 'english-200',
+  includePunctuation = false,
+  includeNumbers = false,
+  language: SupportedLanguage = 'english'
 ): string[] {
-  let pool = [...ENGLISH_200];
-  if (vocabulary === 'english-1k') {
-    pool = [...ENGLISH_200, ...ENGLISH_1000_EXTRA];
-  } else if (vocabulary === 'english-5k') {
-    pool = [...ENGLISH_200, ...ENGLISH_1000_EXTRA, ...ENGLISH_5000_EXTRA];
-  }
-
+  const pool = getWordsForLanguage(language, vocabulary);
   const result: string[] = [];
-  const punctuationMarks = ['.', ',', '!', '?', ';', ':', '-', '"'];
+  const punctuationMarks = isRtlLanguage(language)
+    ? ['،', '؟', '!', '.', '؛']
+    : ['.', ',', '!', '?', ';', ':', '-', '"'];
 
   for (let i = 0; i < count; i++) {
     // Occasionally insert a number if enabled
@@ -181,13 +336,15 @@ export function generateWordSequence(
     const randomIndex = Math.floor(Math.random() * pool.length);
     let word = pool[randomIndex];
 
-    // Capitalize occasionally or after punctuation
+    // Capitalize occasionally or after punctuation (for Latin/Cyrillic scripts)
     const prevWord = result[result.length - 1];
     const prevHadTerminator = prevWord && (prevWord.endsWith('.') || prevWord.endsWith('!') || prevWord.endsWith('?'));
 
     if (includePunctuation) {
-      if (i === 0 || prevHadTerminator || Math.random() < 0.15) {
-        word = word.charAt(0).toUpperCase() + word.slice(1);
+      if (!isRtlLanguage(language) && language !== 'hindi') {
+        if (i === 0 || prevHadTerminator || Math.random() < 0.15) {
+          word = word.charAt(0).toUpperCase() + word.slice(1);
+        }
       }
 
       if (Math.random() < 0.25 && i < count - 1) {
