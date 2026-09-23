@@ -116,23 +116,6 @@ export const Header: React.FC<HeaderProps> = ({
           </span>
         </button>
 
-        {/* 🕹️ CYBER WORD STRIKE (ORIGINAL ARCADE GAME) */}
-        <button
-          onClick={() => onUpdateSettings({ mode: settings.mode === 'arcade' ? 'time' : 'arcade' })}
-          className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-bold transition-all shadow-md min-h-[38px] ${
-            settings.mode === 'arcade'
-              ? 'border-amber-400 bg-gradient-to-r from-amber-400 via-rose-500 to-purple-600 text-neutral-950 scale-105 shadow-amber-500/25 ring-2 ring-amber-400/50'
-              : 'border-amber-400/40 bg-gradient-to-r from-amber-500/15 via-rose-500/15 to-purple-500/15 hover:from-amber-500/25 hover:to-rose-500/25 text-amber-300 hover:text-white hover:border-amber-400/60'
-          }`}
-          title="Play Cyber Word Strike (Original Wave Defense Arcade Game)"
-        >
-          <Gamepad2 className="w-4 h-4 text-amber-400 shrink-0 animate-pulse" />
-          <span className="font-black tracking-tight">CYBER WORD STRIKE</span>
-          <span className="hidden sm:inline px-1 py-0.2 rounded bg-amber-400 text-neutral-950 text-[0.5625rem] font-black uppercase tracking-tighter">
-            ARCADE
-          </span>
-        </button>
-
         {/* 🎓 TOUCH-TYPING LESSONS BUTTON (100 Lessons) */}
         <button
           onClick={() => onUpdateSettings({ mode: settings.mode === 'lessons' ? 'time' : 'lessons' })}
