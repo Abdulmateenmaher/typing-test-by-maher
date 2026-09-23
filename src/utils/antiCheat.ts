@@ -4,7 +4,7 @@
  * inhuman WPM manipulation, paste abuse, and fraudulent leaderboard submissions.
  */
 
-export const MAX_HUMAN_WPM = 250;
+export const MAX_HUMAN_WPM = 400;
 export const MAX_HUMAN_RAW_WPM = 280;
 export const MIN_INTER_KEYSTROKE_INTERVAL_MS = 18; // Physically impossible for human finger alternation
 export const MAX_CHARS_PER_SECOND = 25; // ~300 WPM burst limit

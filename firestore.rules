@@ -24,7 +24,7 @@ service cloud.firestore {
         allow create, update: if isOwner(userId)
           && request.resource.data.wpm is number
           && request.resource.data.wpm >= 0
-          && request.resource.data.wpm <= 250;
+          && request.resource.data.wpm <= 400;
         allow delete: if isOwner(userId);
       }
     }
@@ -36,7 +36,7 @@ service cloud.firestore {
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.bestWpm is number
         && request.resource.data.bestWpm >= 0
-        && request.resource.data.bestWpm <= 250
+        && request.resource.data.bestWpm <= 400
         && request.resource.data.displayName is string
         && request.resource.data.displayName.size() <= 64;
       allow delete: if isOwner(userId);

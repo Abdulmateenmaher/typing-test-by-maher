@@ -841,7 +841,7 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
               {failureReason}
             </p>
             <p className="text-[0.6875rem] text-neutral-400 mt-2 font-mono-code">
-              Console scripts, bots, paste events & speeds &gt; 250 WPM are prohibited to protect leaderboard integrity.
+              Console scripts, bots, paste events & speeds &gt; 400 WPM are prohibited to protect leaderboard integrity.
             </p>
             <button
               type="button"
