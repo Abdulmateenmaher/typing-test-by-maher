@@ -23,6 +23,7 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { TestResult } from './types';
+import { MAX_HUMAN_WPM, MAX_HUMAN_RAW_WPM, validateTestScore } from './utils/antiCheat';
 
 export const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDkatf0x9ELI7IwpezttDONMmJDTzEiuNo",
@@ -208,7 +209,7 @@ export async function fetchUserCloudHistory(userId: string): Promise<TestResult[
   }
 }
 
-// Update User's Public Ranking Entry
+// Update User's Public Ranking Entry (with Anti-Cheat Verification)
 export async function syncUserLeaderboard(
   user: User,
   allUserTests: TestResult[]
@@ -217,9 +218,18 @@ export async function syncUserLeaderboard(
   try {
     if (allUserTests.length === 0) return;
 
-    const bestWpm = allUserTests.reduce((max, t) => Math.max(max, t.wpm), 0);
-    const bestRawWpm = allUserTests.reduce((max, t) => Math.max(max, t.rawWpm), 0);
-    const bestTest = allUserTests.find((t) => t.wpm === bestWpm);
+    // Filter to only legitimate human test results
+    const legitTests = allUserTests.filter((t) => {
+      if (t.wpm > MAX_HUMAN_WPM || t.rawWpm > MAX_HUMAN_RAW_WPM) return false;
+      const check = validateTestScore(t.wpm, t.rawWpm, t.duration, t.totalChars, t.accuracy);
+      return check.safe;
+    });
+
+    if (legitTests.length === 0) return;
+
+    const bestWpm = legitTests.reduce((max, t) => Math.max(max, t.wpm), 0);
+    const bestRawWpm = legitTests.reduce((max, t) => Math.max(max, t.rawWpm), 0);
+    const bestTest = legitTests.find((t) => t.wpm === bestWpm);
 
     const docRef = doc(db, 'leaderboard', user.uid);
     await setDoc(
@@ -228,10 +238,10 @@ export async function syncUserLeaderboard(
         userId: user.uid,
         displayName: user.displayName || user.email?.split('@')[0] || 'Anonymous Typist',
         photoURL: user.photoURL || '',
-        bestWpm: Math.min(400, Math.max(0, bestWpm)),
-        bestRawWpm: Math.min(500, Math.max(0, bestRawWpm)),
-        bestAccuracy: bestTest ? bestTest.accuracy : 100,
-        totalTests: allUserTests.length,
+        bestWpm: Math.min(MAX_HUMAN_WPM, Math.max(0, bestWpm)),
+        bestRawWpm: Math.min(MAX_HUMAN_RAW_WPM, Math.max(0, bestRawWpm)),
+        bestAccuracy: bestTest ? Math.min(100, Math.max(0, bestTest.accuracy)) : 100,
+        totalTests: legitTests.length,
         updatedAt: new Date().toISOString(),
       },
       { merge: true }
@@ -241,7 +251,7 @@ export async function syncUserLeaderboard(
   }
 }
 
-// Fetch Global Leaderboard Rankings
+// Fetch Global Leaderboard Rankings (sanitizes and purges fraudulent >250 WPM hacker submissions)
 export async function fetchLeaderboard(): Promise<LeaderboardEntry[]> {
   const leaderboardPath = 'leaderboard';
   try {
@@ -254,12 +264,20 @@ export async function fetchLeaderboard(): Promise<LeaderboardEntry[]> {
     const entries: LeaderboardEntry[] = [];
     snap.forEach((d) => {
       const data = d.data();
+      const wpm = data.bestWpm || 0;
+      const rawWpm = data.bestRawWpm || 0;
+
+      // Anti-Cheat: Reject any entries exceeding physical human thresholds (e.g. 400 WPM console bot)
+      if (wpm > MAX_HUMAN_WPM || rawWpm > MAX_HUMAN_RAW_WPM) {
+        return; // Purge illegitimate entry
+      }
+
       entries.push({
         userId: d.id,
         displayName: data.displayName || 'Typist',
         photoURL: data.photoURL,
-        bestWpm: data.bestWpm || 0,
-        bestRawWpm: data.bestRawWpm || 0,
+        bestWpm: wpm,
+        bestRawWpm: rawWpm,
         bestAccuracy: data.bestAccuracy || 100,
         totalTests: data.totalTests || 1,
         updatedAt: data.updatedAt || '',

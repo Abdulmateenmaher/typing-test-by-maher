@@ -368,3 +368,136 @@ export function playEmpSound(volume = 0.5) {
   zapOsc.start(now);
   zapOsc.stop(now + 0.32);
 }
+
+/**
+ * F1 / Speedway countdown beep: low beep for 3-2-1, high pitch chime for GO!
+ */
+export function playCountdownBeep(isGo = false, volume = 0.5) {
+  if (volume <= 0) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  osc.type = isGo ? 'triangle' : 'sine';
+  osc.frequency.setValueAtTime(isGo ? 880 : 440, now);
+  gain.gain.setValueAtTime(volume * (isGo ? 0.6 : 0.4), now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + (isGo ? 0.35 : 0.18));
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(now);
+  osc.stop(now + (isGo ? 0.35 : 0.18));
+}
+
+/**
+ * Sports car engine rev / acceleration sound
+ */
+export function playEngineRevSound(volume = 0.5) {
+  if (volume <= 0) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(80, now);
+  osc.frequency.exponentialRampToValueAtTime(220, now + 0.35);
+
+  gain.gain.setValueAtTime(volume * 0.3, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(now);
+  osc.stop(now + 0.4);
+}
+
+/**
+ * Blazing Nitro boost sound: high-pressure jet stream with turbo whoosh
+ */
+export function playNitroSound(volume = 0.5) {
+  if (volume <= 0) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(320, now);
+  osc.frequency.exponentialRampToValueAtTime(900, now + 0.25);
+  osc.frequency.exponentialRampToValueAtTime(200, now + 0.6);
+
+  gain.gain.setValueAtTime(volume * 0.5, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(now);
+  osc.stop(now + 0.65);
+}
+
+/**
+ * Lesson Star Fanfare: sequential bright bell chimes for earned stars
+ */
+export function playStarChime(count = 1, volume = 0.5) {
+  if (volume <= 0) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  const now = ctx.currentTime;
+  const pitches = [523.25, 659.25, 783.99, 1046.5, 1318.5]; // C5, E5, G5, C6, E6
+  const numPitches = Math.min(5, Math.max(1, count));
+
+  for (let i = 0; i < numPitches; i++) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const start = now + i * 0.12;
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(pitches[i], start);
+
+    gain.gain.setValueAtTime(volume * 0.35, start);
+    gain.gain.exponentialRampToValueAtTime(0.001, start + 0.3);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(start);
+    osc.stop(start + 0.3);
+  }
+}
+
+/**
+ * Lesson completed fanfare: triumph chord with upward flourish
+ */
+export function playLessonCompleteSound(volume = 0.5) {
+  if (volume <= 0) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  const now = ctx.currentTime;
+  const chord = [440, 554.37, 659.25, 880]; // A Major
+
+  chord.forEach((freq, idx) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const start = now + idx * 0.06;
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(freq, start);
+
+    gain.gain.setValueAtTime(volume * 0.3, start);
+    gain.gain.exponentialRampToValueAtTime(0.001, start + 0.5);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(start);
+    osc.stop(start + 0.55);
+  });
+}

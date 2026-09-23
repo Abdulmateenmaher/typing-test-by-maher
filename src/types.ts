@@ -1,4 +1,4 @@
-export type TestMode = 'time' | 'words' | 'quote' | 'code' | 'drill' | 'arcade';
+export type TestMode = 'time' | 'words' | 'quote' | 'code' | 'drill' | 'arcade' | 'race' | 'lessons' | 'games' | 'bomb-defusal' | 'word-rain';
 
 export type TimeDuration = 15 | 30 | 60 | 120;
 export type WordCount = 10 | 25 | 50 | 100;

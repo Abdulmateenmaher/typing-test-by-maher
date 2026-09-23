@@ -10,7 +10,9 @@ import {
   Hash,
   Type,
   Gamepad2,
-  Bot
+  Bot,
+  Flag,
+  GraduationCap
 } from 'lucide-react';
 import {
   CodeLanguage,
@@ -61,20 +63,41 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
     >
       {/* Primary Modes Segment (Horizontally scrollable on mobile) */}
       <div className="flex items-center gap-1 bg-white/[0.04] p-1 rounded-xl border border-white/5 text-xs overflow-x-auto no-scrollbar scroll-smooth">
-        {/* 🎮 ARCADE RUSH GAME MODE - Positioned at FRONT so never hidden by scroll */}
+        {/* 🎮 UNIFIED GAMES HUB (Speedway, Space Arcade, Bomb Defusal, Word Rain) */}
         <button
-          onClick={() => onUpdateSettings({ mode: 'arcade' })}
+          onClick={() => onUpdateSettings({ mode: 'games' })}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-black whitespace-nowrap transition-all ${
-            settings.mode === 'arcade'
-              ? 'bg-gradient-to-r from-amber-400 to-rose-500 text-neutral-950 shadow-md ring-2 ring-amber-400/50'
-              : 'text-amber-300 bg-amber-400/15 border border-amber-400/40 hover:bg-amber-400/25 shadow-xs'
+            settings.mode === 'games' ||
+            settings.mode === 'race' ||
+            settings.mode === 'arcade' ||
+            settings.mode === 'bomb-defusal' ||
+            settings.mode === 'word-rain'
+              ? 'bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 text-neutral-950 shadow-md ring-2 ring-cyan-400/50'
+              : 'text-cyan-300 bg-cyan-400/15 border border-cyan-400/40 hover:bg-cyan-400/25 shadow-xs'
           }`}
-          title="Play Cyber Strike Arcade Game"
+          title="Open Maher Typing Arcadia Games Hub (4 Games)"
         >
-          <Gamepad2 className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-          <span>ARCADE</span>
-          <span className="px-1 py-0.2 text-[0.5625rem] rounded bg-amber-400 text-black font-black uppercase tracking-tighter">
-            GAME
+          <Gamepad2 className="w-3.5 h-3.5 text-cyan-400" />
+          <span>GAMES</span>
+          <span className="px-1 py-0.2 text-[0.5625rem] rounded bg-cyan-400 text-black font-black uppercase tracking-tighter">
+            4
+          </span>
+        </button>
+
+        {/* 🎓 TOUCH-TYPING LESSONS (TypingClub Style) */}
+        <button
+          onClick={() => onUpdateSettings({ mode: 'lessons' })}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-black whitespace-nowrap transition-all ${
+            settings.mode === 'lessons'
+              ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-md ring-2 ring-purple-400/50'
+              : 'text-purple-300 bg-purple-400/15 border border-purple-400/40 hover:bg-purple-400/25 shadow-xs'
+          }`}
+          title="Open Touch-Typing Curriculum & Lessons (100 Lessons)"
+        >
+          <GraduationCap className="w-3.5 h-3.5 text-purple-400" />
+          <span>LESSONS</span>
+          <span className="px-1 py-0.2 text-[0.5625rem] rounded bg-purple-400 text-black font-black uppercase tracking-tighter">
+            100
           </span>
         </button>
 
@@ -280,10 +303,22 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
               <span>Wave Survival &amp; High Score</span>
             </div>
           )}
+
+          {settings.mode === 'race' && (
+            <div className="flex items-center gap-1 px-2 text-cyan-300 font-sans text-xs whitespace-nowrap">
+              <span>Multi-Lane Speedway &amp; Turbo Nitro</span>
+            </div>
+          )}
+
+          {settings.mode === 'lessons' && (
+            <div className="flex items-center gap-1 px-2 text-purple-300 font-sans text-xs whitespace-nowrap">
+              <span>60 Progressive Lessons (Stages 1-6)</span>
+            </div>
+          )}
         </div>
 
         {/* Difficulty Quick Badge */}
-        {settings.mode !== 'arcade' && (
+        {settings.mode !== 'arcade' && settings.mode !== 'race' && settings.mode !== 'lessons' && (
           <div className="flex items-center gap-1.5 text-xs">
             <select
               value={settings.difficulty}

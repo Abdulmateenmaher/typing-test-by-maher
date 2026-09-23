@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { RotateCcw, AlertOctagon, Sparkles, Keyboard as KeyboardIcon } from 'lucide-react';
+import { RotateCcw, AlertOctagon, Sparkles, Keyboard as KeyboardIcon, ShieldAlert } from 'lucide-react';
 import {
   CaretStyle,
   DifficultyMode,
@@ -13,6 +13,12 @@ import { BASE_FONT_SIZE } from '../utils/zoom';
 import { playErrorSound, playFinishFanfare, playKeySound } from '../utils/audio';
 import { isRtlLanguage } from '../utils/words';
 import { GhostRacerTrack } from './GhostRacerTrack';
+import {
+  verifyEventSecurity,
+  KeystrokeAntiCheat,
+  validateTestScore,
+  MAX_HUMAN_WPM
+} from '../utils/antiCheat';
 
 interface TypingAreaProps {
   words: string[];
@@ -59,6 +65,7 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
   const totalCorrectCharsRef = useRef<number>(0);
   const totalIncorrectCharsRef = useRef<number>(0);
   const totalExtraCharsRef = useRef<number>(0);
+  const antiCheatRef = useRef<KeystrokeAntiCheat>(new KeystrokeAntiCheat());
 
   // DOM References
   const inputRef = useRef<HTMLInputElement>(null);
@@ -88,6 +95,7 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
     totalCorrectCharsRef.current = 0;
     totalIncorrectCharsRef.current = 0;
     totalExtraCharsRef.current = 0;
+    antiCheatRef.current.reset();
     if (containerRef.current) {
       containerRef.current.scrollTo({ top: 0, behavior: 'auto' });
     }
@@ -249,6 +257,15 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
 
       playFinishFanfare();
 
+      // Anti-Cheat: Validate score before submitting result
+      const scoreValidation = validateTestScore(finalWpm, finalRawWpm, totalElapsed, totalChars, finalAcc);
+      if (!scoreValidation.safe) {
+        setIsFailed(true);
+        setFailureReason(`Anti-Cheat Disqualification: ${scoreValidation.reason}`);
+        playErrorSound(settings.soundVolume);
+        return;
+      }
+
       const result: TestResult = {
         id: `test-${Date.now()}`,
         date: new Date().toISOString(),
@@ -310,6 +327,16 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
 
   // Handle Input Changes & Key Strokes
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Anti-Cheat: Validate event authenticity (blocks console synthetic dispatchEvent)
+    const eventSec = verifyEventSecurity(e);
+    if (!eventSec.safe) {
+      e.preventDefault();
+      setIsFailed(true);
+      setFailureReason(`Anti-Cheat Violation: ${eventSec.reason}`);
+      playErrorSound(settings.soundVolume);
+      return;
+    }
+
     // Quick Reset Shortcuts: Tab + Enter or Escape
     if (e.key === 'Tab') {
       e.preventDefault();
@@ -349,6 +376,15 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
 
     // Record Key Latency & Stats for normal printable keys
     if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
+      // Anti-Cheat: Analyze inter-keystroke intervals (blocks console scripts and inhuman macros)
+      const timingSec = antiCheatRef.current.registerKeystroke();
+      if (!timingSec.safe) {
+        setIsFailed(true);
+        setFailureReason(`Anti-Cheat Disqualification: ${timingSec.reason}`);
+        playErrorSound(settings.soundVolume);
+        return;
+      }
+
       const now = Date.now();
       const latency = lastKeyTimeRef.current ? Math.min(1000, now - lastKeyTimeRef.current) : 150;
       lastKeyTimeRef.current = now;
@@ -399,7 +435,26 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isFailed) return;
+
+    // Anti-Cheat: Validate event authenticity
+    const eventSec = verifyEventSecurity(e);
+    if (!eventSec.safe) {
+      setIsFailed(true);
+      setFailureReason(`Anti-Cheat Violation: ${eventSec.reason}`);
+      playErrorSound(settings.soundVolume);
+      return;
+    }
+
     const val = e.target.value;
+
+    // Anti-Cheat: Detect console batch string injection (e.g. input.value = "long text")
+    const isComposing = (e.nativeEvent as any)?.isComposing;
+    if (val.length - inputVal.length > 2 && !isComposing) {
+      setIsFailed(true);
+      setFailureReason('Anti-Cheat Violation: Bulk text injection detected from console or script.');
+      playErrorSound(settings.soundVolume);
+      return;
+    }
 
     // Mobile Virtual Keyboard handling: Detect trailing space or input composition
     if (val.endsWith(' ')) {
@@ -718,7 +773,15 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
         className={`
           relative w-full p-4 sm:p-6 rounded-2xl border transition-all duration-150 cursor-text
           ${theme.border} ${theme.cardBg} shadow-sm overflow-hidden
-          ${settings.fontSize === 'xl' ? 'text-xl sm:text-2xl' : settings.fontSize === 'lg' ? 'text-lg sm:text-xl' : 'text-base sm:text-lg'}
+          ${
+            settings.fontSize === 'xl'
+              ? 'text-2xl sm:text-3xl md:text-4xl'
+              : settings.fontSize === 'lg'
+              ? 'text-xl sm:text-2xl md:text-3xl'
+              : settings.fontSize === 'sm'
+              ? 'text-base sm:text-lg'
+              : 'text-lg sm:text-xl md:text-2xl'
+          }
         `}
       >
         {/* Hidden Input field capturing keystrokes (touch-friendly on mobile) */}
@@ -738,6 +801,15 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
           autoCorrect="off"
           spellCheck="false"
           inputMode="text"
+          onPaste={(e) => {
+            e.preventDefault();
+            setIsFailed(true);
+            setFailureReason('Anti-Cheat Disqualification: Pasting text during typing test is strictly prohibited.');
+            playErrorSound(settings.soundVolume);
+          }}
+          onCopy={(e) => e.preventDefault()}
+          onCut={(e) => e.preventDefault()}
+          onDrop={(e) => e.preventDefault()}
         />
 
         {/* Blurring overlay if user clicks away */}
@@ -750,21 +822,34 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
           </div>
         )}
 
-        {/* Failure modal if hardcore/master difficulty triggers */}
+        {/* Failure / Anti-Cheat Disqualification modal */}
         {isFailed && (
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center z-40 p-6 text-center rounded-2xl">
-            <div className="p-3 rounded-full bg-rose-500/20 text-rose-400 mb-2 border border-rose-500/30">
-              <AlertOctagon className="w-7 h-7" />
+          <div className="absolute inset-0 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center z-40 p-6 text-center rounded-2xl border border-rose-500/40">
+            <div className="p-3 rounded-2xl bg-rose-500/20 text-rose-400 mb-2.5 border border-rose-500/40 shadow-lg shadow-rose-500/20">
+              {failureReason.toLowerCase().includes('anti-cheat') || failureReason.toLowerCase().includes('security') ? (
+                <ShieldAlert className="w-8 h-8 text-rose-400 animate-pulse" />
+              ) : (
+                <AlertOctagon className="w-8 h-8" />
+              )}
             </div>
-            <h3 className="text-base font-bold text-white">Test Terminated</h3>
-            <p className="text-xs text-rose-300 mt-0.5 max-w-sm">{failureReason}</p>
+            <h3 className="text-base font-black text-white tracking-wide uppercase">
+              {failureReason.toLowerCase().includes('anti-cheat') || failureReason.toLowerCase().includes('security')
+                ? 'Anti-Cheat Disqualification'
+                : 'Test Terminated'}
+            </h3>
+            <p className="text-xs text-rose-300 font-medium mt-1 max-w-md bg-rose-950/40 px-3 py-1.5 rounded-xl border border-rose-500/30">
+              {failureReason}
+            </p>
+            <p className="text-[0.6875rem] text-neutral-400 mt-2 font-mono-code">
+              Console scripts, bots, paste events & speeds &gt; 250 WPM are prohibited to protect leaderboard integrity.
+            </p>
             <button
               type="button"
               onClick={() => {
                 resetInternalState();
                 onRestartTest();
               }}
-              className="mt-3 flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold transition-all shadow-md cursor-pointer active:scale-95"
+              className="mt-3 flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold transition-all shadow-md cursor-pointer active:scale-95"
             >
               <RotateCcw className="w-4 h-4" />
               Retry Test (Enter / Tab / Esc)
@@ -778,8 +863,8 @@ export const TypingArea: React.FC<TypingAreaProps> = ({
           dir={isRTL ? 'rtl' : 'ltr'}
           className={`relative ${
             isRTL
-              ? 'max-h-[8.5rem] sm:max-h-[9.75rem] text-right font-rtl leading-loose'
-              : 'max-h-[7.1875rem] sm:max-h-[8.125rem] text-left font-mono-code leading-relaxed tracking-wider'
+              ? 'max-h-[10rem] sm:max-h-[11.5rem] text-right font-rtl leading-loose'
+              : 'max-h-[8.5rem] sm:max-h-[9.75rem] text-left font-mono-code leading-relaxed tracking-wider'
           } overflow-hidden select-none`}
         >
           {/* Words */}

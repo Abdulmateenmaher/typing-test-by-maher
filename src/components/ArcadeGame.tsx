@@ -21,7 +21,8 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ThemeConfig } from '../utils/themes';
-import { SoundProfile, SupportedLanguage } from '../types';
+import { SoundProfile, SupportedLanguage, TestMode } from '../types';
+import { verifyEventSecurity } from '../utils/antiCheat';
 import {
   playLaserSound,
   playExplosionSound,
@@ -132,6 +133,8 @@ interface ArcadeGameProps {
     wpm: number,
     category: 'normal' | 'fast' | 'hyper'
   ) => void;
+  onBackToGames?: () => void;
+  onSwitchGame?: (mode: TestMode) => void;
 }
 
 export const ArcadeGame: React.FC<ArcadeGameProps> = ({
@@ -140,7 +143,9 @@ export const ArcadeGame: React.FC<ArcadeGameProps> = ({
   soundVolume,
   language = 'english',
   onExit,
-  onSaveScore
+  onSaveScore,
+  onBackToGames,
+  onSwitchGame
 }) => {
   // Game States
   const [gameState, setGameState] = useState<'ready' | 'playing' | 'gameover'>('ready');
@@ -1093,6 +1098,9 @@ export const ArcadeGame: React.FC<ArcadeGameProps> = ({
 
   // Keyboard Event Handlers
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const sec = verifyEventSecurity(e);
+    if (!sec.safe) return;
+
     if (e.key === 'Escape') {
       onExit();
       return;
@@ -1124,6 +1132,9 @@ export const ArcadeGame: React.FC<ArcadeGameProps> = ({
   // Global window shortcut listener so Space/Enter/Escape works even if input lost focus
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      const sec = verifyEventSecurity(e);
+      if (!sec.safe) return;
+
       if (e.key === 'Escape') {
         onExit();
         return;
@@ -1207,15 +1218,61 @@ export const ArcadeGame: React.FC<ArcadeGameProps> = ({
     >
       {/* Top Arcade HUD Console */}
       <div className="flex items-center justify-between px-3 sm:px-4 py-2 rounded-2xl bg-neutral-900/90 border border-cyan-500/20 text-xs font-mono-code backdrop-blur-md shadow-lg">
-        {/* Exit to Classic Modes */}
-        <button
-          onClick={onExit}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white transition-colors"
-          title="Back to Classic Typing Test"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Classic Modes</span>
-        </button>
+        {/* Exit to Classic Modes, Games Hub & Switcher */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {onBackToGames && (
+            <button
+              onClick={onBackToGames}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-purple-500/40 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 hover:text-white transition-colors cursor-pointer"
+              title="Return to Games Hub"
+            >
+              <Gamepad2 className="w-3.5 h-3.5 text-purple-400" />
+              <span className="hidden sm:inline">Games Hub</span>
+            </button>
+          )}
+
+          {/* Arcade Game Title Badge in HUD */}
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-gradient-to-r from-amber-500/25 to-rose-500/25 border border-amber-400/50 text-amber-200 text-xs font-black">
+            <span>🕹️</span>
+            <span>ARCADE HUD</span>
+          </div>
+
+          {/* Quick switcher to other games */}
+          {onSwitchGame && (
+            <div className="hidden lg:flex items-center gap-1 text-[0.6875rem]">
+              <button
+                onClick={() => onSwitchGame('race')}
+                className="px-2 py-1 rounded-lg bg-white/5 hover:bg-cyan-500/20 text-neutral-400 hover:text-cyan-300 border border-white/5 transition-colors cursor-pointer"
+                title="Switch to Speedway Race"
+              >
+                🏎️ Race
+              </button>
+              <button
+                onClick={() => onSwitchGame('bomb-defusal')}
+                className="px-2 py-1 rounded-lg bg-white/5 hover:bg-rose-500/20 text-neutral-400 hover:text-rose-300 border border-white/5 transition-colors cursor-pointer"
+                title="Switch to Bomb Defusal"
+              >
+                💣 Bomb
+              </button>
+              <button
+                onClick={() => onSwitchGame('word-rain')}
+                className="px-2 py-1 rounded-lg bg-white/5 hover:bg-teal-500/20 text-neutral-400 hover:text-teal-300 border border-white/5 transition-colors cursor-pointer"
+                title="Switch to Word Rain"
+              >
+                🌧️ Rain
+              </button>
+            </div>
+          )}
+
+          <button
+            onClick={onExit}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white transition-colors cursor-pointer"
+            title="Back to Classic Typing Test"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Classic</span>
+          </button>
+        </div>
 
         {/* Live Score, Wave & Combo Streak */}
         <div className="flex items-center gap-3 sm:gap-6">
@@ -1296,6 +1353,10 @@ export const ArcadeGame: React.FC<ArcadeGameProps> = ({
           lang={isRtlLanguage(language) ? (language === 'pashto' ? 'ps' : language === 'dari' ? 'fa' : 'ar') : 'en'}
           onChange={handleMobileInput}
           onKeyDown={handleKeyDown}
+          onPaste={(e) => e.preventDefault()}
+          onDrop={(e) => e.preventDefault()}
+          onCopy={(e) => e.preventDefault()}
+          onCut={(e) => e.preventDefault()}
           className="absolute inset-0 w-full h-full opacity-0 cursor-crosshair z-20"
           autoCapitalize="off"
           autoComplete="off"
@@ -1380,13 +1441,24 @@ export const ArcadeGame: React.FC<ArcadeGameProps> = ({
               </div>
             </div>
 
-            <button
-              onClick={startGame}
-              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-600 hover:from-cyan-300 hover:to-blue-500 text-neutral-950 font-black text-sm transition-transform active:scale-95 shadow-xl shadow-cyan-500/30 cursor-pointer"
-            >
-              <Zap className="w-4 h-4 text-neutral-950" />
-              <span>LAUNCH DEFENSE (SPACE / ENTER)</span>
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={startGame}
+                className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-600 hover:from-cyan-300 hover:to-blue-500 text-neutral-950 font-black text-sm transition-transform active:scale-95 shadow-xl shadow-cyan-500/30 cursor-pointer"
+              >
+                <Zap className="w-4 h-4 text-neutral-950" />
+                <span>LAUNCH DEFENSE (SPACE / ENTER)</span>
+              </button>
+              {onBackToGames && (
+                <button
+                  onClick={onBackToGames}
+                  className="flex items-center gap-1.5 px-5 py-3 rounded-2xl border border-purple-500/40 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 hover:text-white font-bold text-xs transition-colors cursor-pointer"
+                >
+                  <Gamepad2 className="w-4 h-4 text-purple-400" />
+                  <span>Games Hub</span>
+                </button>
+              )}
+            </div>
           </div>
         )}
 
@@ -1460,9 +1532,18 @@ export const ArcadeGame: React.FC<ArcadeGameProps> = ({
                 <RotateCcw className="w-4 h-4" />
                 <span>RETRY (SPACE / ENTER)</span>
               </button>
+              {onBackToGames && (
+                <button
+                  onClick={onBackToGames}
+                  className="flex items-center gap-1 px-4 py-2.5 rounded-2xl border border-purple-500/40 bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 hover:text-white text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
+                >
+                  <Gamepad2 className="w-3.5 h-3.5" />
+                  <span>Games Hub</span>
+                </button>
+              )}
               <button
                 onClick={onExit}
-                className="px-4 py-2.5 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white text-xs sm:text-sm font-semibold transition-colors"
+                className="px-4 py-2.5 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
               >
                 Classic Modes
               </button>
