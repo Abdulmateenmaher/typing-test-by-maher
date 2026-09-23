@@ -14,6 +14,8 @@ export type CaretStyle = 'line' | 'block' | 'underline' | 'laser';
 /** 'auto' fits the interface to the browser window, numbers are zoom percentages. */
 export type ZoomLevel = 'auto' | 100 | 110 | 125 | 150 | 175 | 200;
 
+export type ThemeMode = 'system' | 'dark' | 'light';
+
 export type ThemeId =
   | 'maher-obsidian'
   | 'nordic-frost'
@@ -52,6 +54,7 @@ export interface TestSettings {
   soundVolume: number; // 0 to 1
   errorBeep: boolean;
   theme: ThemeId;
+  themeMode: ThemeMode;
   caretStyle: CaretStyle;
   fontSize: 'sm' | 'md' | 'lg' | 'xl';
   zoom: ZoomLevel;
