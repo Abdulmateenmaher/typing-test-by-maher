@@ -410,7 +410,7 @@ export default function App() {
             typing test by maher
           </span>
           <span className="hidden sm:inline">&bull;</span>
-          <span className="hidden sm:inline">Firebase Cloud Database & Live Global Leaderboard</span>
+          <span className="hidden sm:inline">Live Global Leaderboard</span>
         </div>
 
         <div className="flex items-center gap-4 text-[0.6875rem]">
